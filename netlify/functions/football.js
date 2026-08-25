@@ -68,6 +68,25 @@ exports.handler = async (event) => {
       return json(200, data);
     }
 
+    if (action === 'odds_date') {
+      const date = isoDate(p.date);
+      // API-Football paginates pre-match odds. Pull the available pages for the
+      // selected date so the browser can match odds to the fixture id.
+      const all = [];
+      for (let page = 1; page <= 20; page++) {
+        const data = await api(`/odds?date=${encodeURIComponent(date)}&page=${page}`);
+        all.push(...(data.response || []));
+        const total = Number(data?.paging?.total || 1);
+        if (page >= total) break;
+      }
+      return json(200, {
+        get: 'odds',
+        parameters: { date },
+        results: all.length,
+        response: all
+      });
+    }
+
     return json(400, { error: 'Unknown action.' });
   } catch (err) {
     console.error(err);
