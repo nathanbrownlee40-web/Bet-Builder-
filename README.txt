@@ -1,28 +1,31 @@
-TOP DAILY BUILDERS — VALUE SCANNER v19
+TOP DAILY BUILDERS — VALUE SCANNER v22
 
-Adds a new 💰 Value tab to the existing app.
+WHAT CHANGED
+- Fixed the regression where the Value screen found fixtures but produced only “Data error” rows or no model markets.
+- Bookmaker odds are no longer required for a scan. The scanner shows model probability + fair odds first. You can compare those fair odds with your bookmaker yourself.
+- Added a server-side account-plan check so the app does not waste requests trying blocked seasons on the free plan.
+- Free plan: historical form is taken from the latest supported 2024 season. Paid plans: the current season is used.
+- Historical fixture statistics are fetched in batches of up to 20 fixture IDs, reducing API calls compared with one statistics request per match.
+- Goals, corners, cards and shots on target are modelled where the source data exists. Missing statistics are left missing rather than invented.
+- The scan now keeps the fixture list visible even when a particular market cannot be modelled.
+- Results show probability, fair odds, sample size and the form season used.
 
-WHAT IT DOES
-- Pulls fixtures by DATE instead of relying on a hard-coded fixture list.
-- Prioritises major leagues and cups: Premier League, Championship, LaLiga, Bundesliga, Serie A, Ligue 1, Champions League, Europa League, Conference League, FA Cup, EFL Cup, Eredivisie, Primeira Liga, Scottish Premiership, Liga MX, Libertadores, Sudamericana, MLS, Brazil, Argentina, Colombia, Saudi Pro League, J1 League and more.
-- Filters the value scan to those major competitions, so youth/reserve matches do not take over the results.
-- Retrieves the latest completed team fixtures and available match statistics.
-- Uses a Poisson probability model for goals, corners, cards and shots on target where enough source data exists.
-- Shows model probability and fair odds.
-- A bet is only labelled VALUE after a bookmaker price is entered and the model EV meets the minimum EV setting.
-
-IMPORTANT
-The model is a starting quantitative model, not proof of profitable value. It needs backtesting/calibration before you should trust the probabilities with real money. Missing competition statistics are not invented.
+HOW THE VALUE CHECK WORKS
+1. The app finds the major-league/cup fixtures for the selected date.
+2. It collects historical completed matches for both teams.
+3. It aggregates goals and available corners/cards/shots-on-target statistics.
+4. A Poisson model converts the combined averages into probabilities for the supported over markets.
+5. Fair odds are calculated as 1 / model probability.
+6. You then check the exact same market at your bookmaker. If the bookmaker price is higher than the model fair odds, it is a potential value price. That is not a guarantee of profit; the model needs backtesting/calibration.
 
 NETLIFY SETUP
-1. Upload/deploy this folder.
-2. Netlify will use netlify/functions/football.js.
-3. In Netlify: Site configuration -> Environment variables -> Add variable.
-4. Name: API_FOOTBALL_KEY
-5. Value: your API-Football key.
-6. Redeploy.
+- Deploy this folder as the site root.
+- Netlify function: netlify/functions/football.js
+- Environment variable: API_FOOTBALL_KEY
+- The key stays server-side in Netlify and is not embedded in the browser.
 
-The API key is deliberately NOT embedded in the browser code.
+API-FOOTBALL PLAN NOTE
+API-Football currently lists the free plan as 100 requests/day and 10 requests/minute, with restricted historical seasons. Paid plans have much larger quotas and deeper historical access. The app checks the plan server-side and chooses the form season accordingly.
 
-API-FOOTBALL PLAN
-The function also pulls pre-match odds by date. API-Football keeps pre-match odds for a limited recent window and availability varies by fixture/competition/bookmaker. The scanner uses the highest returned bookmaker price for a matching market; it does not invent a price when none is returned. Free plans still have limited season/data access, and the scanner can make many statistics/odds requests, so a higher request allowance may be needed for broad scans.
+IMPORTANT
+This is a quantitative screening model, not proof that a bet is profitable. A fair price is only as good as the data and calibration behind the probability.
