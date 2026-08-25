@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta name="tdb-version" content="v19-bet-builder-analyser">
+<meta name="tdb-version" content="v18-live-bet-and-clear-stats">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f172a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Top Daily Builders + Tracker"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.json"><link rel="icon" type="image/png" sizes="512x512" href="icon-512x512.png"><link rel="apple-touch-icon" sizes="192x192" href="icon-192x192.png">
@@ -91,6 +91,8 @@ body.statsMode .periodSelect option{background:#0e1a29;color:#fff}
 
 .toggleButton{border:0;background:transparent;padding:0;margin:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex:0 0 28px}.toggleButton .toggleIcon{display:block}.builder.collapsed .builderDetails{display:none}.builderHead{cursor:pointer}.builderHead .builderToggle{display:flex;align-items:center;gap:8px}.toggleIcon{font-size:18px;font-weight:900;color:#64748b;width:20px}.builderNumber{font-size:18px;font-weight:850}.builderCode{font-size:11px;color:#64748b;margin-top:2px}.builderDetails{border-top:1px solid rgba(148,163,184,.22)}.builder.open .builderDetails{display:block}.builder.open .builderHead{padding-bottom:13px}.builder.open .builderToggle .toggleIcon{transform:rotate(90deg)}
 .headActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.viewOnlyBanner{background:#ecfdf5;border:1px solid #86efac;color:#166534;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-weight:800;font-size:13px;text-align:center}
+
+.valueGrid{display:grid;gap:10px}.valueCard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow)}.valueCard.hot{border-color:#86efac;background:#f0fdf4}.valueTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.valueTitle{font-weight:850}.valueMeta{font-size:12px;color:var(--muted);margin-top:3px}.valueNumbers{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}.valueNum{background:#f8fafc;border-radius:12px;padding:9px}.valueNum span{display:block;color:var(--muted);font-size:11px}.valueNum b{font-size:17px}.valueBadge{padding:6px 9px;border-radius:999px;font-size:11px;font-weight:850;background:#e2e8f0}.valueBadge.hot{background:#bbf7d0;color:#166534}.valueBadge.good{background:#dcfce7;color:#166534}.valueBadge.warn{background:#fef3c7;color:#92400e}.valueBadge.none{background:#e2e8f0;color:#475569}.marketList{display:grid;gap:8px;margin-top:10px}.marketRowV{border:1px solid var(--line);border-radius:13px;padding:10px}.marketRowV .line{display:flex;justify-content:space-between;gap:8px}.tiny{font-size:11px;color:var(--muted)}.valueControls{display:grid;gap:10px}.valueControls .field{margin:0}.valueTable{width:100%;border-collapse:collapse;font-size:12px}.valueTable th,.valueTable td{padding:8px;border-bottom:1px solid var(--line);text-align:left}.valueTable th{color:var(--muted);font-size:11px}.oddsInput{width:90px;padding:7px;border:1px solid var(--line);border-radius:9px}.valueInfo{font-size:12px;line-height:1.5;color:#475569}.valueWarn{background:#fff7ed;border:1px solid #fdba74;color:#9a3412;border-radius:12px;padding:10px;font-size:12px}.valueGood{background:#f0fdf4;border:1px solid #86efac;color:#166534;border-radius:12px;padding:10px;font-size:12px}
 </style>
 <style>
 .bb-top-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
@@ -109,10 +111,6 @@ body.statsMode .periodSelect option{background:#0e1a29;color:#fff}
   .builder.win{background:#f0fdf4}.builder.loss{background:#fff1f2}
 }
 </style>
-<style id="tdb-analyser-style">
-.analyserHero{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border-radius:20px;padding:18px;margin-bottom:14px}.analyserHero h2{margin:0 0 6px;font-size:21px}.analyserHero p{margin:0;color:#cbd5e1;font-size:13px;line-height:1.45}.analyserTools{display:grid;gap:10px}.analyserUpload{border:2px dashed #cbd5e1;border-radius:18px;background:#fff;padding:18px;text-align:center}.analyserUpload input{width:100%;margin-top:10px}.analyserSearch{width:100%;border:1px solid #cbd5e1;border-radius:12px;padding:12px;background:#fff}.analyserFixture{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:15px;margin:12px 0;box-shadow:0 8px 24px rgba(15,23,42,.07)}.analyserFixtureHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.analyserFixture h3{margin:0;font-size:17px}.analyserMeta{font-size:12px;color:#64748b;margin-top:4px}.analyserMarket{border-top:1px solid #eef2f7;padding-top:12px;margin-top:12px}.analyserMarketTop{display:flex;justify-content:space-between;gap:10px;align-items:center}.analyserMarketName{font-weight:800;font-size:14px}.analyserScore{font-weight:900;font-size:20px}.analyserReason{font-size:12px;color:#64748b;line-height:1.4;margin-top:5px}.analyserSafe{margin-top:8px;background:#f8fafc;border-radius:10px;padding:8px;font-size:12px}.analyserBadge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800}.analyserStrong{background:#dcfce7;color:#166534}.analyserGood{background:#fef3c7;color:#92400e}.analyserRisk{background:#fee2e2;color:#991b1b}.analyserSelected{outline:2px solid #16a34a}.analyserBuilder{position:sticky;bottom:8px;background:#0f172a;color:#fff;border-radius:18px;padding:14px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.2)}.analyserBuilder small{color:#cbd5e1}.analyserBuilderRow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #334155}.analyserBtn{border:0;border-radius:11px;padding:9px 12px;font-weight:800;cursor:pointer}.analyserBtn.primary{background:#fff;color:#0f172a}.analyserBtn.secondary{background:#e2e8f0;color:#0f172a}.analyserExplain{background:#f8fafc;border-radius:14px;padding:12px;margin-top:10px;font-size:12px;color:#475569;line-height:1.5}.analyserPreview{max-width:100%;max-height:260px;border-radius:12px;margin-top:10px;display:none}.analyserEmpty{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;color:#64748b}
-@media(min-width:600px){.analyserTools{grid-template-columns:1fr 1fr}}
-</style>
 </head>
 <body>
 <div class="app"><header class="top">
@@ -121,8 +119,8 @@ body.statsMode .periodSelect option{background:#0e1a29;color:#fff}
 <section id="dashboard" class="screen active"></section>
 <section id="live" class="screen"></section>
 <section id="builders" class="screen"></section>
-<section id="add" class="screen"></section><section id="stats" class="screen"></section><section id="analyser" class="screen"></section>
-</main></div><div class="bottom"><nav class="nav"><button data-screen="dashboard" class="active">🏠<small>Dashboard</small></button><button data-screen="live">🔴<small>Live & Upcoming</small></button><button data-screen="builders">⚽<small>Builder Results</small></button><button data-screen="stats">📊<small>TDB Stats</small></button><button data-screen="analyser">🔎<small>Analyser</small></button><button data-screen="add">➕<small>Add Bet</small></button></nav></div><div id="toast" class="toast"></div>
+<section id="add" class="screen"></section><section id="stats" class="screen"></section><section id="value" class="screen"></section></section>
+</main></div><div class="bottom"><nav class="nav"><button data-screen="dashboard" class="active">🏠<small>Dashboard</small></button><button data-screen="live">🔴<small>Live & Upcoming</small></button><button data-screen="builders">⚽<small>Builder Results</small></button><button data-screen="stats">📊<small>TDB Stats</small></button><button data-screen="value">💰<small>Value</small></button><button data-screen="add">➕<small>Add Bet</small></button></nav></div><div id="toast" class="toast"></div>
 <script>
 // Keep hosting/preview badges from covering the app navigation in installed copies.
 // On a hosted Netlify project, the Powered by Netlify badge is controlled by the
@@ -802,281 +800,89 @@ function renderStats(){
   sel.onchange=e=>{window.statsPeriod=e.target.value;renderStats()};
 }
 
-const API_FOOTBALL_KEY="a2d87f71b465bc8397ceeaa796d3d28f";
-const API_FOOTBALL_BASE="https://v3.football.api-sports.io";
-let analyserLiveData=[];
-const ANALYSER_DATA=[{"fixture":"Nottingham Forest vs Leeds","date":"25/08/2026","time":"20:00","league":"EFL CUP","market":"Over 1.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":91.0,"safer":"Over 0.5 Match Goals","altConfidence":96.0},{"fixture":"Nottingham Forest vs Leeds","date":"25/08/2026","time":"20:00","league":"EFL CUP","market":"Nottingham Forest Over 3.5 Team Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":90.0,"safer":"Nottingham Forest Over 2.5 Corners","altConfidence":96.0},{"fixture":"Nottingham Forest vs Leeds","date":"25/08/2026","time":"20:00","league":"EFL CUP","market":"Over 2.5 Combined Match Cards","rationale":"High tactical friction parameters within local rivalries trigger high card floors for booking frequencies.","confidence":88.0,"safer":"Over 1.5 Combined Cards","altConfidence":94.0},{"fixture":"Cardiff vs Norwich","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 1.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":89.0,"safer":"Over 0.5 Match Goals","altConfidence":95.0},{"fixture":"Cardiff vs Norwich","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 7.5 Combined Match Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":91.0,"safer":"Over 6.5 Combined Corners","altConfidence":97.0},{"fixture":"Cardiff vs Norwich","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 2.5 Combined Match Cards","rationale":"High tactical friction parameters within local rivalries trigger high card floors for booking frequencies.","confidence":86.0,"safer":"Over 1.5 Combined Cards","altConfidence":95.0},{"fixture":"Doncaster vs Middlesbrough","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 2.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":90.0,"safer":"Over 1.5 Match Goals","altConfidence":97.0},{"fixture":"Doncaster vs Middlesbrough","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Middlesbrough Over 4.5 Team Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":92.0,"safer":"Middlesbrough Over 3.5 Corners","altConfidence":98.0},{"fixture":"Stoke vs Hull","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Under 3.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":87.0,"safer":"Under 4.5 Match Goals","altConfidence":95.0},{"fixture":"Stoke vs Hull","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 8.5 Combined Match Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":90.0,"safer":"Over 7.5 Combined Corners","altConfidence":96.0},{"fixture":"Stoke vs Hull","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 3.5 Combined Match Cards","rationale":"High tactical friction parameters within local rivalries trigger high card floors for booking frequencies.","confidence":89.0,"safer":"Over 2.5 Combined Cards","altConfidence":94.0},{"fixture":"Ipswich vs Leicester","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 2.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":91.0,"safer":"Over 1.5 Match Goals","altConfidence":96.0},{"fixture":"Ipswich vs Leicester","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 9.5 Combined Match Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":88.0,"safer":"Over 8.5 Combined Corners","altConfidence":94.0},{"fixture":"Ipswich vs Leicester","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 2.5 Combined Match Cards","rationale":"High tactical friction parameters within local rivalries trigger high card floors for booking frequencies.","confidence":85.0,"safer":"Over 1.5 Combined Cards","altConfidence":93.0},{"fixture":"Plymouth vs Coventry","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 1.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":93.0,"safer":"Over 0.5 Match Goals","altConfidence":98.0},{"fixture":"Plymouth vs Coventry","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 8.5 Combined Match Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":91.0,"safer":"Over 7.5 Combined Corners","altConfidence":97.0},{"fixture":"Southampton vs West Ham","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 2.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":91.0,"safer":"Over 1.5 Match Goals","altConfidence":97.0},{"fixture":"Southampton vs West Ham","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"West Ham Over 4.5 Team Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":92.0,"safer":"West Ham Over 3.5 Corners","altConfidence":98.0},{"fixture":"Southampton vs West Ham","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 3.5 Combined Match Cards","rationale":"High tactical friction parameters within local rivalries trigger high card floors for booking frequencies.","confidence":93.0,"safer":"Over 2.5 Combined Cards","altConfidence":97.0},{"fixture":"Blackburn vs Sheff Utd","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Under 2.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":88.0,"safer":"Under 3.5 Match Goals","altConfidence":96.0},{"fixture":"Blackburn vs Sheff Utd","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 8.5 Combined Match Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":89.0,"safer":"Over 7.5 Combined Corners","altConfidence":95.0},{"fixture":"Blackburn vs Sheff Utd","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 3.5 Combined Match Cards","rationale":"High tactical friction parameters within local rivalries trigger high card floors for booking frequencies.","confidence":91.0,"safer":"Over 2.5 Combined Cards","altConfidence":97.0},{"fixture":"Sheff Wed vs Wolverhampton","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 2.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":90.0,"safer":"Over 1.5 Match Goals","altConfidence":96.0},{"fixture":"Sheff Wed vs Wolverhampton","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Wolverhampton Over 4.5 Team Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":92.0,"safer":"Wolverhampton Over 3.5 Corners","altConfidence":98.0},{"fixture":"Cambridge Utd vs Millwall","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Under 2.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":86.0,"safer":"Under 3.5 Match Goals","altConfidence":94.0},{"fixture":"Cambridge Utd vs Millwall","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 9.5 Combined Match Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":90.0,"safer":"Over 8.5 Combined Corners","altConfidence":96.0},{"fixture":"Cambridge Utd vs Millwall","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 3.5 Combined Match Cards","rationale":"High tactical friction parameters within local rivalries trigger high card floors for booking frequencies.","confidence":92.0,"safer":"Over 2.5 Combined Cards","altConfidence":97.0},{"fixture":"Watford vs Peterborough","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 2.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":94.0,"safer":"Over 1.5 Match Goals","altConfidence":98.0},{"fixture":"Watford vs Peterborough","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Watford Over 4.5 Team Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":91.0,"safer":"Watford Over 3.5 Corners","altConfidence":97.0},{"fixture":"Blackpool vs Lincoln City","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 1.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":90.0,"safer":"Over 0.5 Match Goals","altConfidence":96.0},{"fixture":"Blackpool vs Lincoln City","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 8.5 Combined Match Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":88.0,"safer":"Over 7.5 Combined Corners","altConfidence":95.0},{"fixture":"Barnsley vs Crewe","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 2.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":92.0,"safer":"Over 1.5 Match Goals","altConfidence":98.0},{"fixture":"Barnsley vs Crewe","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Barnsley Over 4.5 Team Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":90.0,"safer":"Barnsley Over 3.5 Corners","altConfidence":96.0},{"fixture":"Stevenage vs Reading","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 1.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":89.0,"safer":"Over 0.5 Match Goals","altConfidence":95.0},{"fixture":"Stevenage vs Reading","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 8.5 Combined Match Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":91.0,"safer":"Over 7.5 Combined Corners","altConfidence":97.0},{"fixture":"Stevenage vs Reading","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 2.5 Combined Match Cards","rationale":"High tactical friction parameters within local rivalries trigger high card floors for booking frequencies.","confidence":86.0,"safer":"Over 1.5 Combined Cards","altConfidence":94.0},{"fixture":"Walsall vs Leyton Orient","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 1.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":91.0,"safer":"Over 0.5 Match Goals","altConfidence":97.0},{"fixture":"Walsall vs Leyton Orient","date":"25/08/2026","time":"19:45","league":"EFL CUP","market":"Over 8.5 Combined Match Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":89.0,"safer":"Over 7.5 Combined Corners","altConfidence":95.0},{"fixture":"Birmingham vs Brentford","date":"25/08/2026","time":"20:00","league":"EFL CUP","market":"Over 2.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":92.0,"safer":"Over 1.5 Match Goals","altConfidence":97.0},{"fixture":"Birmingham vs Brentford","date":"25/08/2026","time":"20:00","league":"EFL CUP","market":"Brentford Over 4.5 Team Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":91.0,"safer":"Brentford Over 3.5 Corners","altConfidence":97.0},{"fixture":"Birmingham vs Brentford","date":"25/08/2026","time":"20:00","league":"EFL CUP","market":"Over 2.5 Combined Match Cards","rationale":"High tactical friction parameters within local rivalries trigger high card floors for booking frequencies.","confidence":87.0,"safer":"Over 1.5 Combined Cards","altConfidence":94.0},{"fixture":"Sabah vs Hapoel Beer Sheva","date":"25/08/2026","time":"17:45","league":"UEFA CHAMPIONS LEAGUE QUALIFYING","market":"Over 1.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":90.0,"safer":"Over 0.5 Match Goals","altConfidence":96.0},{"fixture":"Sabah vs Hapoel Beer Sheva","date":"25/08/2026","time":"17:45","league":"UEFA CHAMPIONS LEAGUE QUALIFYING","market":"Over 8.5 Combined Match Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":100.0,"safer":"Over 7.5 Combined Corners","altConfidence":100.0},{"fixture":"Sabah vs Hapoel Beer Sheva","date":"25/08/2026","time":"17:45","league":"UEFA CHAMPIONS LEAGUE QUALIFYING","market":"Over 3.5 Combined Match Cards","rationale":"High tactical friction parameters within local rivalries trigger high card floors for booking frequencies.","confidence":91.0,"safer":"Over 2.5 Combined Cards","altConfidence":96.0},{"fixture":"LASK Linz vs Celtic","date":"25/08/2026","time":"19:45","league":"UEFA CHAMPIONS LEAGUE QUALIFYING","market":"Over 2.5 Match Goals","rationale":"Early cup structures indicate highly dynamic penalty box penetrations and defensive transition gaps.","confidence":93.0,"safer":"Over 1.5 Match Goals","altConfidence":98.0},{"fixture":"LASK Linz vs Celtic","date":"25/08/2026","time":"19:45","league":"UEFA CHAMPIONS LEAGUE QUALIFYING","market":"Over 9.5 Combined Match Corners","rationale":"Flank tracking distributions consistently clear horizontal lines out wide over key baseline thresholds.","confidence":90.0,"safer":"Over 8.5 Combined Corners","altConfidence":96.0}];
-let analyserSelected=[];
-let analyserOCRText='';
-function analyserNorm(x){return String(x||'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,' ').trim();}
-function analyserDistance(a,b){a=analyserNorm(a);b=analyserNorm(b);if(!a||!b)return 999;const d=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let prev=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const cur=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=cur;}}return d[b.length];}
-function analyserTeams(f){const p=f.fixture.split(/\s+vs\s+/i);return p.length===2?p:[f.fixture,''];}
-function analyserFindMatches(text){const lines=String(text||'').split(/\r?\n/).map(x=>analyserNorm(x)).filter(Boolean);const uniq=[];ANALYSER_DATA.forEach(f=>{if(uniq.some(x=>x.fixture===f.fixture))return;const [h,a]=analyserTeams(f);const hn=analyserNorm(h),an=analyserNorm(a);const hit=lines.some(l=>l.includes(hn)||l.includes(an));const both=lines.some(l=>l.includes(hn))&&lines.some(l=>l.includes(an));const fuzzyH=lines.some(l=>analyserDistance(l,hn)<=Math.max(2,Math.floor(hn.length*.28)));const fuzzyA=lines.some(l=>analyserDistance(l,an)<=Math.max(2,Math.floor(an.length*.28)));if(both||(hit&&fuzzyH&&fuzzyA))uniq.push(f);});return uniq;}
-function analyserBadge(n){return n>=90?['STRONG','analyserStrong']:n>=84?['GOOD','analyserGood']:['REVIEW','analyserRisk'];}
-function analyserRenderResults(matches,query=''){const grouped={};matches.forEach(f=>{if(query&&!analyserNorm(f.fixture+' '+f.market+' '+f.league).includes(analyserNorm(query)))return;(grouped[f.fixture]??=[]).push(f);});const keys=Object.keys(grouped);const box=document.getElementById('analyserResults');if(!keys.length){box.innerHTML='<div class="analyserEmpty">No fixtures matched yet. Upload a screenshot or search for a team.</div>';return;}box.innerHTML=keys.map(fix=>{const arr=grouped[fix], f=arr[0], badge=analyserBadge(Math.max(...arr.map(x=>x.confidence)));return `<div class="analyserFixture"><div class="analyserFixtureHead"><div><h3>${analyserEsc(fix)}</h3><div class="analyserMeta">${analyserEsc(f.date)} · ${analyserEsc(f.time)} · ${analyserEsc(f.league)}</div></div><span class="analyserBadge ${badge[1]}">${badge[0]}</span></div>${arr.map((x,i)=>{const selected=analyserSelected.includes(x);const b=analyserBadge(x.confidence);return `<div class="analyserMarket ${selected?'analyserSelected':''}"><div class="analyserMarketTop"><div class="analyserMarketName">${analyserEsc(x.market)}</div><div class="analyserScore ${x.confidence>=90?'analyserStrong':x.confidence>=84?'analyserGood':'analyserRisk'}" style="background:none">${x.confidence}%</div></div><div class="analyserReason">${analyserEsc(x.rationale)}</div><div class="analyserSafe">🛡️ <b>Safer:</b> ${analyserEsc(x.safer)} · <b>${x.altConfidence}%</b></div><button class="analyserBtn ${selected?'secondary':'primary'} analyserAdd" data-fixture="${analyserEsc(fix)}" data-market-index="${ANALYSER_DATA.indexOf(x)}" style="margin-top:8px">${selected?'✓ Added to builder':'＋ Add pick'}</button></div>`}).join('')}</div>`;}).join('');box.querySelectorAll('.analyserAdd').forEach(btn=>btn.onclick=()=>{const x=ANALYSER_DATA[+btn.dataset.marketIndex];const idx=analyserSelected.indexOf(x);if(idx>=0)analyserSelected.splice(idx,1);else analyserSelected.push(x);analyserRenderResults(matches,document.getElementById('analyserSearch').value);analyserRenderBuilder();});}
-function analyserEsc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
-function analyserBuilderScore(picks){if(!picks.length)return 0;return Math.round(picks.reduce((a,x)=>a+Number(x.confidence||0),0)/picks.length);}
-function analyserRenderBuilder(){const el=document.getElementById('analyserBuilder');if(!el)return;if(!analyserSelected.length){el.innerHTML='<b>🧩 Builder shortlist</b><br><small>Add picks from the opportunities above.</small>';return;}const score=analyserBuilderScore(analyserSelected);const weak=analyserSelected.reduce((a,b)=>a.confidence<b.confidence?a:b);const safer=Number(weak.altConfidence||0);const improved=Math.round((analyserSelected.reduce((a,x)=>a+Number(x.confidence||0),0)-Number(weak.confidence)+safer)/analyserSelected.length);el.innerHTML=`<div class="analyserMarketTop"><div><b>🧩 Builder shortlist</b><br><small>${analyserSelected.length} selection${analyserSelected.length===1?'':'s'}</small></div><div style="font-size:25px;font-weight:900">${score}/100</div></div>${analyserSelected.map(x=>`<div class="analyserBuilderRow"><span>${analyserEsc(x.fixture)} — ${analyserEsc(x.market)}</span><b>${x.confidence}%</b></div>`).join('')}<div style="margin-top:10px;padding:10px;border-radius:12px;background:#1e293b"><small>⚠️ Weakest leg</small><br><b>${analyserEsc(weak.market)} — ${weak.confidence}%</b><br><small>Safer alternative: ${analyserEsc(weak.safer)} — ${weak.altConfidence}%</small><br><small>Average score if swapped: <b>${improved}/100</b></small></div><div style="margin-top:10px"><button class="analyserBtn primary" id="analyserCopyBuilder">Copy shortlist</button> <button class="analyserBtn secondary" id="analyserClearBuilder">Clear</button></div>`;document.getElementById('analyserCopyBuilder').onclick=()=>navigator.clipboard?.writeText(analyserSelected.map(x=>`${x.fixture} — ${x.market} (${x.confidence}%)`).join('\n')).then(()=>toast('Builder shortlist copied'));document.getElementById('analyserClearBuilder').onclick=()=>{analyserSelected=[];analyserRenderBuilder();analyserRenderResults(ANALYSER_DATA,document.getElementById('analyserSearch')?.value||'');};}
-function analyserSearch(){const q=document.getElementById('analyserSearch').value;const source=analyserLiveData.length?analyserLiveData:analyserFindMatches(analyserOCRText||ANALYSER_DATA.map(x=>x.fixture).join('\n'));analyserRenderResults(source,q);}
-async function apiFootball(path){const r=await fetch(API_FOOTBALL_BASE+path,{headers:{'x-apisports-key':API_FOOTBALL_KEY}});if(!r.ok)throw new Error('Football data request failed ('+r.status+')');const j=await r.json();if(j.errors&&Object.keys(j.errors).length)throw new Error(Object.values(j.errors).join(', '));return j.response||[];}
-function apiTeamName(t){return t?.name||''}
-async function apiFindTeam(name){const rows=await apiFootball('/teams?search='+encodeURIComponent(name));return rows?.[0]?.team||null}
-function statNum(v){const n=parseFloat(String(v??'').replace('%',''));return Number.isFinite(n)?n:null;}
-function statFind(stats,name){const wanted=name.toLowerCase();const x=(stats||[]).find(z=>String(z.type||'').toLowerCase()===wanted);return statNum(x?.value);}
-function recentSummary(games,teamId){let played=0,wins=0,draws=0,losses=0,gf=0,ga=0,over15=0,over25=0,btts=0;for(const g of games){const hg=Number(g.goals?.home),ag=Number(g.goals?.away);if(!Number.isFinite(hg)||!Number.isFinite(ag))continue;const isHome=Number(g.teams?.home?.id)===Number(teamId);const scored=isHome?hg:ag, conceded=isHome?ag:hg;played++;gf+=scored;ga+=conceded;if(scored>conceded)wins++;else if(scored===conceded)draws++;else losses++;if(hg+ag>=2)over15++;if(hg+ag>=3)over25++;if(hg>0&&ag>0)btts++;}return {played,wins,draws,losses,gf,ga,over15,over25,btts};}
-function blankStats(){return {played:0,corners:[],cards:[],sot:[],shots:[],poss:[]};}
-function addFixtureStats(summary, fixture, teamId){const hs=fixture?.statistics||[];const teamBlock=hs.find(x=>Number(x.team?.id)===Number(teamId));const st=teamBlock?.statistics||[];const corners=statFind(st,'Corner Kicks');const sot=statFind(st,'Shots on Goal');const shots=statFind(st,'Total Shots');const yellow=statFind(st,'Yellow Cards');const red=statFind(st,'Red Cards');if(corners!=null)summary.corners.push(corners);if(sot!=null)summary.sot.push(sot);if(shots!=null)summary.shots.push(shots);if(yellow!=null||red!=null)summary.cards.push((yellow||0)+(red||0));}
-function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:null;}
-function rate(a,fn){return a.length?Math.round(a.filter(fn).length/a.length*100):null;}
-function statLine(label,a,unit=''){const v=avg(a);return v==null?'':`${label}: ${v.toFixed(1)}${unit}`;}
-function marketFromSummaries(home,away){const n=Math.min(home.played,away.played)||1;const o15=Math.round(((home.over15+away.over15)/(n*2))*100);const o25=Math.round(((home.over25+away.over25)/(n*2))*100);const btts=Math.round(((home.btts+away.btts)/(n*2))*100);const avgGoals=(home.gf+home.ga+away.gf+away.ga)/(n*2);const markets=[];const clamp=x=>Math.max(50,Math.min(97,Math.round(x)));const push=(market,confidence,rationale,safer,alt)=>markets.push({market,confidence:clamp(confidence),rationale,safer,altConfidence:clamp(alt)});
-push('Over 1.5 Match Goals',o15,`Last ${n} games: 2+ total goals landed in ${home.over15+away.over15}/${n*2}. Average total goals across those games: ${avgGoals.toFixed(1)}.`,'Over 0.5 Match Goals',Math.max(o15+5,94));
-push('Over 2.5 Match Goals',o25,`Last ${n} games: 3+ total goals landed in ${home.over25+away.over25}/${n*2}.`,'Over 1.5 Match Goals',Math.max(o15,90));
-push('Both Teams To Score',btts,`Last ${n} games: BTTS landed in ${home.btts+away.btts}/${n*2} combined matches.`,'Over 1.5 Match Goals',Math.max(o15,90));
-const hc=avg(home.corners),ac=avg(away.corners),hs=avg(home.sot),as=avg(away.sot),hca=avg(home.cards),aca=avg(away.cards);
-if(hc!=null&&ac!=null){const total=hc+ac;const over65=rate([...home.corners,...away.corners],x=>x>=3.5);push('Over 6.5 Match Corners',Math.max(50,Math.min(96,Math.round(70+Math.min(15,(total-7)*7)))),`Last ${Math.min(home.corners.length,away.corners.length)} matches with corner data: ${statLine('home corners',home.corners)}; ${statLine('away corners',away.corners)}. Combined average: ${total.toFixed(1)}.`,'Over 4.5 Match Corners',Math.max(90,Math.round(88+(over65||0)/20)));}
-if(hs!=null&&as!=null){const total=hs+as;push('Over 3.5 Match Shots on Target',Math.max(50,Math.min(96,Math.round(68+Math.min(18,(total-4)*6)))),`Average shots on target: ${hs.toFixed(1)} home + ${as.toFixed(1)} away = ${total.toFixed(1)} combined.`,'Over 1.5 Match Shots on Target',Math.max(92,Math.round(90+Math.min(6,total))));}
-if(hca!=null&&aca!=null){const total=hca+aca;push('Over 2.5 Match Cards',Math.max(50,Math.min(96,Math.round(70+Math.min(18,(total-2.5)*8)))),`Average cards: ${hca.toFixed(1)} home + ${aca.toFixed(1)} away = ${total.toFixed(1)} combined.`,'Over 1.5 Match Cards',Math.max(92,Math.round(91+Math.min(5,total))));}
-return markets.sort((a,b)=>b.confidence-a.confidence);}
-function analyserDateCandidates(text){
-  const out=[]; const now=new Date();
-  const add=(d)=>{if(d&&!isNaN(d)){const iso=d.toISOString().slice(0,10);if(!out.includes(iso))out.push(iso);}};
-  const re=/\b(\d{1,2})[./-](\d{1,2})(?:[./-](\d{2,4}))?\b/g; let m;
-  while((m=re.exec(String(text||'')))){let day=+m[1],mon=+m[2],yr=m[3]?+m[3]:now.getFullYear();if(yr<100)yr+=2000;if(day<=31&&mon<=12)add(new Date(yr,mon-1,day));}
-  if(!out.length){add(new Date(now));add(new Date(now.getTime()+86400000));}
-  return out.slice(0,4);
+
+// ===== Value Scanner =====
+const VALUE_STATE={key:localStorage.getItem('bba_api_key')||'', date:new Date().toISOString().slice(0,10), fixtures:[], results:[], running:false, statsCalls:0, maxStatsCalls:35};
+const Vfetch=async (url)=>{const r=await fetch(url,{headers:{'x-apisports-key':VALUE_STATE.key}});if(!r.ok)throw new Error('API '+r.status);const j=await r.json();if(j.errors&&Object.keys(j.errors).length)throw new Error(Object.values(j.errors).join(', '));return j.response||[]};
+const Vnum=x=>typeof x==='number'?x:(x==null?null:parseFloat(String(x).replace(/[^0-9.-]/g,'')));
+const Vclamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function poisson(lambda,k){if(lambda<=0)return k===0?1:0;let p=Math.exp(-lambda);for(let i=1;i<=k;i++)p*=lambda/i;return p}
+function poissonOver(lambda,line){const k=Math.floor(line);let s=0;for(let i=0;i<=k;i++)s+=poisson(lambda,i);return 1-s}
+function modelFor(home,away){
+ const h=home.form||[], a=away.form||[];
+ const avg=arr=>arr.length?arr.reduce((s,x)=>s+x,0)/arr.length:1.25;
+ const hGF=avg(h.map(x=>x.gf)),hGA=avg(h.map(x=>x.ga)),aGF=avg(a.map(x=>x.gf)),aGA=avg(a.map(x=>x.ga));
+ const hHome=h.filter(x=>x.home).slice(0,10),aAway=a.filter(x=>!x.home).slice(0,10);
+ const hhGF=avg(hHome.map(x=>x.gf)),hhGA=avg(hHome.map(x=>x.ga)),aaGF=avg(aAway.map(x=>x.gf)),aaGA=avg(aAway.map(x=>x.ga));
+ const baseHome=Vclamp((hhGF*.55+aGA*.45)*1.05,.25,4),baseAway=Vclamp((aaGF*.55+hGA*.45)*.95,.15,3.5);
+ const lambda=baseHome+baseAway;
+ const over15=poissonOver(lambda,1.5),over25=poissonOver(lambda,2.5),over35=poissonOver(lambda,3.5);
+ const p0h=poisson(baseHome,0),p0a=poisson(baseAway,0),btts=1-p0h-p0a+p0h*p0a;
+ return {xgH:baseHome,xgA:baseAway,lambda,markets:[['Over 1.5 Goals',over15],['Over 2.5 Goals',over25],['Over 3.5 Goals',over35],['BTTS — Yes',btts]],dataN:h.length+a.length};
 }
-function analyserOcrLines(text){
-  const bad=/^(football|leagues?|matches?|filter|live|today|tomorrow|yesterday|search|customise|customize|events?|all|more|uefa|laliga|la liga|efl cup|premier league|england|spain|europe|playoff round|round|fifa|women|men)$/i;
-  return String(text||'').split(/\r?\n/).map(x=>x.replace(/[|{}[\]<>]/g,' ').replace(/\s+/g,' ').trim()).filter(x=>x.length>=3&&!bad.test(x)&&!/^\d{1,2}:\d{2}$/.test(x)&&!/^\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?$/.test(x));
-}
-function analyserTokenScore(a,b){
-  const na=analyserNorm(a), nb=analyserNorm(b); if(!na||!nb)return 0;
-  if(na.includes(nb)||nb.includes(na))return 1;
-  const at=new Set(na.split(' ')), bt=nb.split(' '); let hit=0;bt.forEach(t=>{if(t.length>2&&[...at].some(x=>x===t||x.includes(t)||t.includes(x)))hit++;});
-  return hit/Math.max(1,bt.length);
-}
-async function analyserFixturesByDates(dates){
-  const all=[]; for(const d of dates){try{const rows=await apiFootball('/fixtures?date='+d);rows.forEach(x=>{if(x?.fixture?.id)all.push(x)});}catch(e){console.warn('Date fixture lookup failed',d,e)}}
-  const map=new Map();all.forEach(x=>map.set(x.fixture.id,x));return [...map.values()];
-}
-function analyserLineTeamScore(line,name){const a=analyserNorm(line),b=analyserNorm(name);if(!a||!b)return 0;if(a===b||a.includes(b)||b.includes(a))return 1;const d=analyserDistance(a,b);return d<=Math.max(2,Math.floor(Math.max(a.length,b.length)*.30))?0.78:analyserTokenScore(line,name);}
-function analyserTeamLineEligible(line){
-  const x=String(line||'').trim();
-  if(x.length<2||x.length>34)return false;
-  if(/^\d/.test(x)||/\d$/.test(x))return false;
-  if(/^\d{1,2}:\d{2}/.test(x)||/^\d{1,2}[./-]\d{1,2}/.test(x))return false;
-  if(/^(football|leagues?|matches?|filter|live|today|tomorrow|yesterday|search|customise|customize|events?|all|more|uefa|laliga|la liga|efl cup|premier league|england|spain|europe|playoff round|round|fifa|women|men|free|odds|price|total|corners?|cards?|shots?|goals?|home|away)$/i.test(x))return false;
-  return /[a-zA-ZÀ-ÿ]/.test(x);
-}
-function analyserTeamCandidates(text){
-  const raw=analyserOcrLines(text), out=[],seen=new Set();
-  for(const l of raw){
-    const x=l.replace(/\b(\d{1,2}:\d{2}|\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?)\b/g,'').replace(/[^\p{L}\p{N}&.'’ -]/gu,' ').replace(/\s+/g,' ').trim();
-    if(!analyserTeamLineEligible(x))continue;
-    const k=analyserNorm(x); if(!k||seen.has(k))continue; seen.add(k); out.push(x);
+function fairOdds(p){return p>0?1/p:null}
+function ev(p,odds){return p&&odds?(p*odds-1):null}
+function normTeam(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'')}
+function teamMatch(a,b){a=normTeam(a);b=normTeam(b);return a===b||a.includes(b)||b.includes(a)}
+async function findTeamHistory(teamId){return Vfetch('/.netlify/functions/football-api/fixtures?team='+teamId+'&last=20&status=FT');}
+async function getOdds(fixtureId){try{return await Vfetch('/.netlify/functions/football-api/odds?fixture='+fixtureId);}catch(e){return []}}
+function parseOdds(odds){
+ const out={};
+ for(const book of odds||[]){for(const bet of (book.bets||[])){
+  const name=String(bet.name||'').toLowerCase();
+  if(!/goals|both teams to score|btts/.test(name))continue;
+  for(const v of (bet.values||[])){const odd=Vnum(v.odd),value=String(v.value||''); if(!odd)continue;
+   if(/over 1\.5/.test(value.toLowerCase()))out['Over 1.5 Goals']=Math.max(out['Over 1.5 Goals']||0,odd);
+   if(/over 2\.5/.test(value.toLowerCase()))out['Over 2.5 Goals']=Math.max(out['Over 2.5 Goals']||0,odd);
+   if(/over 3\.5/.test(value.toLowerCase()))out['Over 3.5 Goals']=Math.max(out['Over 3.5 Goals']||0,odd);
+   if(/yes/i.test(value)&&/both|btts/.test(name))out['BTTS — Yes']=Math.max(out['BTTS — Yes']||0,odd);
   }
-  return out.slice(0,80);
+ }} return out;
 }
-function analyserMatchOcrToFixtures(text, fixtures){
-  const lines=analyserTeamCandidates(text), compact=analyserNorm(text), found=[];
-  for(const f of fixtures){
-    const h=f.teams?.home?.name||'', a=f.teams?.away?.name||'';
-    const hs=Math.max(0,...lines.map(l=>analyserLineTeamScore(l,h)));
-    const as=Math.max(0,...lines.map(l=>analyserLineTeamScore(l,a)));
-    const wholeH=analyserLineTeamScore(compact,h), wholeA=analyserLineTeamScore(compact,a);
-    // Accept clean exact/near matches and also two weaker OCR matches when both sides agree.
-    if((hs>=.62&&as>=.62)||(hs>=.48&&as>=.48&&hs+as>=1.18)||(wholeH>=.72&&wholeA>=.72))found.push(f);
-  }
-  return found;
-}
-function analyserGuessPairs(text){
-  const lines=analyserTeamCandidates(text), pairs=[];
-  // Fixture-list apps normally put home/away on adjacent lines, but allow a small OCR gap.
-  for(let i=0;i<lines.length;i++){
-    for(let j=i+1;j<=Math.min(lines.length-1,i+2);j++){
-      const a=lines[i],b=lines[j];
-      if(a===b)continue;
-      if(a.length>2&&b.length>2&&a.length<34&&b.length<34)pairs.push([a,b]);
-    }
-  }
-  const seen=new Set();return pairs.filter(p=>{const k=analyserNorm(p.join('|'));if(seen.has(k))return false;seen.add(k);return true;}).slice(0,40);
-}
-async function analyserMatchByTeamCandidates(text, fixtures){
-  const candidates=analyserTeamCandidates(text); const found=[];
-  for(const f of fixtures){
-    const h=f.teams?.home?.name||'',a=f.teams?.away?.name||'';
-    const hs=Math.max(0,...candidates.map(x=>analyserLineTeamScore(x,h)));
-    const as=Math.max(0,...candidates.map(x=>analyserLineTeamScore(x,a)));
-    if(hs>=.58&&as>=.58)found.push(f);
-  }
-  return found;
-}
-async function analyserLiveUpcomingFixtures(){
-  // One broad upcoming-fixtures request is far more reliable than trying to search
-  // every noisy OCR line as if it were a team name.
-  const out=[];
-  const seen=new Set();
-  for(const path of ['/fixtures?next=100','/fixtures?from='+new Date().toISOString().slice(0,10)+'&to='+new Date(Date.now()+4*86400000).toISOString().slice(0,10)]){
-    try{
-      const rows=await apiFootball(path);
-      rows.forEach(x=>{if(x?.fixture?.id&&!seen.has(x.fixture.id)){seen.add(x.fixture.id);out.push(x);}});
-    }catch(e){console.warn('Upcoming fixture lookup failed',path,e)}
-  }
-  return out;
-}
-function analyserCleanOcrBlob(text){
-  return String(text||'').replace(/\b(football|matches|leagues|filter|live|today|tomorrow|search sofascore|customise your events list from here|winnings boost|offers free|outrights offers|free|home|away|all sports|casino|in play|my bets|soccer|uefa champions league qualifying|la liga|efl cup|england|spain|europe)\b/gi,' ')
-    .replace(/\s+/g,' ').trim();
-}
-function analyserNameScore(blob,name){
-  const n=analyserNorm(name); if(!n)return 0;
-  const b=analyserNorm(blob);
-  if(b.includes(n))return 1;
-  const words=n.split(' ').filter(x=>x.length>2);
-  if(!words.length)return 0;
-  let hit=0;
-  for(const w of words){if(b.includes(w))hit++;}
-  return hit/words.length;
-}
-function analyserMatchBroadOcr(text,fixtures){
-  const blob=analyserCleanOcrBlob(text), found=[];
-  for(const f of fixtures){
-    const h=f.teams?.home?.name||'', a=f.teams?.away?.name||'';
-    const hs=analyserNameScore(blob,h), as=analyserNameScore(blob,a);
-    // A real fixture is only accepted when BOTH teams are recognisable.
-    if(hs>=0.70&&as>=0.70) found.push({f,score:hs+as});
-  }
-  return found.sort((a,b)=>b.score-a.score).map(x=>x.f);
-}
-async function liveAnalyseFixtures(text){
- const status=document.getElementById('analyserOCRStatus');
- status.textContent='Finding fixtures from the screenshot…';
- let fixtures=[];
- // First use the exact screenshot date if OCR found one.
- const dates=analyserDateCandidates(text);
- try{fixtures=await analyserFixturesByDates(dates);}catch(e){console.warn('Date fixture lookup failed',e)}
- // If the OCR date is wrong/missing, use the current/upcoming fixture feed.
- let selected=analyserMatchOcrToFixtures(text,fixtures);
- if(!selected.length){
-   const upcoming=await analyserLiveUpcomingFixtures();
-   selected=analyserMatchBroadOcr(text,upcoming);
- }
- // Last resort: search only short, plausible OCR names and verify them against
- // the team's upcoming fixtures. Never feed giant OCR sentences to /teams?search.
- if(!selected.length){
-   const candidates=analyserTeamCandidates(text).filter(x=>x.length<=24&&x.split(/\s+/).length<=3);
-   const pairs=[];
-   for(let i=0;i<candidates.length;i++)for(let j=i+1;j<Math.min(candidates.length,i+4);j++)pairs.push([candidates[i],candidates[j]]);
-   for(const [hn,an] of pairs.slice(0,20)){
-     try{
-       const ht=await apiFindTeam(hn),at=await apiFindTeam(an);
-       if(!ht||!at)continue;
-       const rows=await apiFootball('/fixtures?team='+ht.id+'&next=30');
-       const exact=rows.find(x=>{
-         const h=x.teams?.home?.name||'',a=x.teams?.away?.name||'';
-         return ((analyserLineTeamScore(h,hn)>=.55&&analyserLineTeamScore(a,an)>=.55) ||
-                 (analyserLineTeamScore(h,an)>=.55&&analyserLineTeamScore(a,hn)>=.55));
-       });
-       if(exact&&!selected.some(x=>x.fixture?.id===exact.fixture?.id))selected.push(exact);
-     }catch(e){console.warn('Team fallback failed',hn,an,e)}
-     if(selected.length>=12)break;
-   }
- }
- if(!selected.length){
-   const names=analyserTeamCandidates(text).filter(x=>x.length<=24).slice(0,20).join(', ');
-   throw new Error('I read the screenshot, but could not safely match the teams to live fixtures. Detected text: '+(names||'no usable team names')+'. The screenshot itself is readable; the problem is fixture matching, so no statistics were requested.');
- }
- status.textContent=`Matched ${selected.length} fixture${selected.length===1?'':'s'} — researching last 5 games, goals, corners, cards and shots on target…`;
- const results=[]; let count=0, statsCalls=0; const statsCache=new Map();
- async function getEnrichedFixture(id){if(statsCache.has(id))return statsCache.get(id);let data=[];try{data=await apiFootball('/fixtures/statistics?fixture='+id);statsCalls++;}catch(e){console.warn('Statistics unavailable for fixture',id,e)}statsCache.set(id,data);return data;}
- for(const fixture of selected.slice(0,10)){
-   const hn=fixture.teams?.home?.name, an=fixture.teams?.away?.name;
-   status.textContent=`Researching ${hn} vs ${an}…`;
+async function runValueScan(){
+ if(!VALUE_STATE.key){toast('Enter your API-Football key first');return}
+ VALUE_STATE.key=document.getElementById('valueApiKey').value.trim();localStorage.setItem('bba_api_key',VALUE_STATE.key);
+ VALUE_STATE.date=document.getElementById('valueDate').value;VALUE_STATE.running=true;VALUE_STATE.results=[];VALUE_STATE.statsCalls=0;renderValue();
+ try{
+  const fx=await Vfetch('/.netlify/functions/football-api/fixtures?date='+encodeURIComponent(VALUE_STATE.date)+'&status=NS');
+  VALUE_STATE.fixtures=fx.slice(0,20);
+  for(let i=0;i<VALUE_STATE.fixtures.length;i++){
+   const f=VALUE_STATE.fixtures[i]; renderValueProgress(i+1,VALUE_STATE.fixtures.length);
    try{
-     const ht=fixture.teams.home,at=fixture.teams.away;
-     const hg=await apiFootball('/fixtures?team='+ht.id+'&last=5');
-     const ag=await apiFootball('/fixtures?team='+at.id+'&last=5');
-     const hs=recentSummary(hg,ht.id),as=recentSummary(ag,at.id);
-     hs.corners=[];hs.cards=[];hs.sot=[];hs.shots=[];as.corners=[];as.cards=[];as.sot=[];as.shots=[];
-     const ids=[...new Map([...hg,...ag].filter(g=>g?.fixture?.id).map(g=>[g.fixture.id,g])).values()];
-     for(const g of ids){if(statsCalls>=70)break;const data=await getEnrichedFixture(g.fixture.id);if(data.length){addFixtureStats(hs,{statistics:data},ht.id);addFixtureStats(as,{statistics:data},at.id);}}
-     const markets=marketFromSummaries(hs,as);
-     for(const m of markets)results.push({fixture:`${hn} vs ${an}`,date:fixture.fixture?.date?new Date(fixture.fixture.date).toLocaleDateString('en-GB'):'Upcoming',time:fixture.fixture?.date?new Date(fixture.fixture.date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'',league:fixture.league?.name||'Live data',...m});
-     count++;
-   }catch(e){console.warn('Fixture analysis failed',fixture,e)}
- }
- analyserLiveData=results;
- status.textContent=`Live analysis complete: ${count} fixture${count===1?'':'s'}. Goals, BTTS, last-5 form plus corners, cards and shots on target where data is available. ${statsCalls} statistics calls used.`;
- analyserRenderResults(results);
-}
-function analyserDetectEmbeddedScreenshot(img){
-  const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;
-  const c=document.createElement('canvas');c.width=Math.max(1,Math.round(W));c.height=Math.max(1,Math.round(H));
-  const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,W,H);
-  const d=ctx.getImageData(0,0,W,H).data;
-  let minX=W,maxX=0,minY=H,maxY=0,count=0;
-  // Detect the strong blue header of an embedded football-app screenshot.
-  for(let y=Math.floor(H*.12);y<Math.floor(H*.78);y+=2){
-    for(let x=0;x<W;x+=2){
-      const i=(y*W+x)*4,r=d[i],g=d[i+1],b=d[i+2];
-      if(b>125 && b>r*1.45 && b>g*1.22 && (b-r)>45){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);count++;}
-    }
+    const [hf,af,od]=await Promise.all([findTeamHistory(f.teams.home.id),findTeamHistory(f.teams.away.id),getOdds(f.fixture.id)]);
+    const form=arr=>arr.map(x=>({gf:Vnum(x.goals?.for)||0,ga:Vnum(x.goals?.against)||0,home:x.teams?.home?.id===f.teams.home.id}));
+    const h={form:form(hf)},a={form:form(af)};const model=modelFor(h,a);const odds=parseOdds(od);
+    const markets=model.markets.map(([market,p])=>{const o=odds[market]||null;const fair=fairOdds(p),e=ev(p,o);return {market,p,odds:o,fair,ev:e,threshold:fair?fair*1.05:null};}).sort((x,y)=>(y.ev??-999)-(x.ev??-999));
+    VALUE_STATE.results.push({fixture:f,model,markets});
+   }catch(e){VALUE_STATE.results.push({fixture:f,error:e.message})}
   }
-  if(count<150 || maxX<=minX || maxY<=minY) return null;
-  const width=maxX-minX+1;
-  // The fixture-list phone is usually a tall portrait crop under the blue header.
-  const x0=Math.max(0,minX-Math.round(width*.10));
-  const x1=Math.min(W,maxX+Math.round(width*.10));
-  const targetH=Math.round(width*2.85);
-  const y0=Math.max(0,minY-Math.round(width*.05));
-  const y1=Math.min(H,y0+targetH);
-  return {x:x0,y:y0,w:x1-x0,h:y1-y0,scale:Math.max(5,Math.min(8,1100/(x1-x0)))};
+ }catch(e){toast(e.message||'Value scan failed')}
+ VALUE_STATE.running=false;renderValue();
 }
-async function analyserScan(file){
- if(!file)return; try{
-   const status=document.getElementById('analyserOCRStatus'); status.textContent='Preparing screenshot…';
-   const preview=document.getElementById('analyserPreview'); preview.src=URL.createObjectURL(file); preview.style.display='block';
-   if(!window.Tesseract){await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc);});}
-   const img=await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=URL.createObjectURL(file);});
-   const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;
-   const candidates=[];
-   const addCrop=(name,x,y,w,h,scale=2.8,threshold=false)=>{
-     const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*scale));c.height=Math.max(1,Math.round(h*scale));
-     const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,x,y,w,h,0,0,c.width,c.height);
-     if(threshold){const p=ctx.getImageData(0,0,c.width,c.height);for(let i=0;i<p.data.length;i+=4){const r=p.data[i],g=p.data[i+1],b=p.data[i+2];const yv=(r*299+g*587+b*114)/1000;const v=yv>150?255:0;p.data[i]=p.data[i+1]=p.data[i+2]=v;}ctx.putImageData(p,0,0);}
-     candidates.push({name,src:c.toDataURL('image/png')});
-   };
-   // First priority: detect and crop a smaller screenshot embedded inside the uploaded photo.
-   const embedded=analyserDetectEmbeddedScreenshot(img);
-   if(embedded){
-     addCrop('embedded-color',embedded.x,embedded.y,embedded.w,embedded.h,embedded.scale,false);
-     addCrop('embedded-gray',embedded.x,embedded.y,embedded.w,embedded.h,embedded.scale,true);
-   }
-   addCrop('full',0,0,W,H,Math.min(2.5,Math.max(1.5,1800/W)),false);
-   addCrop('middle',W*.03,H*.12,W*.94,H*.76,2.5,false);
-   addCrop('left-fixtures',0,H*.22,W*.62,H*.58,3.2,false);
-   addCrop('center-fixtures',W*.10,H*.18,W*.80,H*.68,2.8,false);
-   addCrop('portrait-fixtures',0,H*.28,W*.55,H*.50,3.4,false);
-   const texts=[];
-   for(let i=0;i<candidates.length;i++){
-     status.textContent=`Scanning fixture area ${i+1}/${candidates.length}…`;
-     for(const psm of [6,11]){
-       try{
-         const r=await Tesseract.recognize(candidates[i].src,'eng',{logger:m=>{if(m.status==='recognizing text'&&m.progress>.9)status.textContent=`Scanning fixture area ${i+1}/${candidates.length}…`;},tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1'});
-         if(r?.data?.text)texts.push(r.data.text);
-       }catch(e){console.warn('OCR crop failed',candidates[i].name,psm,e)}
-     }
-   }
-   analyserOCRText=texts.join('\n');
-   const lines=analyserOcrLines(analyserOCRText); const likely=analyserGuessPairs(analyserOCRText);
-   const teamCandidates=analyserTeamCandidates(analyserOCRText); status.textContent=`Screenshot read: ${lines.length} useful lines · ${teamCandidates.length} team names detected${likely.length?` · ${likely.length} possible fixture pairs`:''}. Tap ⚡ Analyse screenshot with live last-5 data.`;
-   // Show any spreadsheet matches as a preview, but don't block live analysis if none match.
-   analyserRenderResults(analyserFindMatches(analyserOCRText));
- }catch(e){console.error(e);document.getElementById('analyserOCRStatus').textContent='Could not process screenshot. Try again — the analyser supports full screenshots and screenshots containing a smaller fixture image.';}
+function renderValueProgress(done,total){const el=document.getElementById('valueProgress');if(el)el.textContent='Analysing '+done+' of '+total+' fixtures…'}
+function renderValue(){const root=document.getElementById('value');if(!root)return;root.innerHTML=`<div class="sectionHead"><div><h2>💰 Value Scanner</h2><div class="hint">Modelled probabilities first, bookmaker price second. It does not call a bet “value” unless the price beats the model's fair price.</div></div></div>
+ <div class="card"><div class="valueControls"><div class="field"><label>API-Football key</label></div><div class="marketRow"><div class="field"><label>Fixture date</label><input id="valueDate" type="date" value="${VALUE_STATE.date}"></div><div class="field"><label>Minimum EV to show</label><input id="valueMinEv" type="number" step="0.1" value="5"></div></div><button class="btn primary" id="runValue">${VALUE_STATE.running?'Scanning…':'🔎 Scan for value'}</button><div id="valueProgress" class="hint">${VALUE_STATE.running?'Starting scan…':VALUE_STATE.results.length?VALUE_STATE.results.length+' fixtures analysed.':'The model uses 20-match form where available and compares it with available bookmaker goal/BTTS prices.'}</div></div></div>
+ <div class="valueWarn">⚠️ A positive EV result is a <b>modelled value candidate</b>, not proof of profit. The app must be backtested/calibrated before treating the model probability as trustworthy.</div>
+ ${renderValueResults()}`;
+ document.getElementById('runValue').onclick=runValueScan;
 }
-function renderAnalyser(){document.getElementById('analyser').innerHTML=`<div class="sectionHead"><h2>Bet Builder Analyser</h2></div><div class="analyserHero"><h2>🔎 Find betting opportunities</h2><p>Upload a fixture screenshot, then run live analysis. The app reads the teams, pulls each team’s latest 5 completed matches and calculates <b>Goals, BTTS, Corners, Cards & Shots on Target</b> with confidence scores and safer alternatives.</p></div><div class="analyserTools"><div class="analyserUpload"><b>📸 Import fixture screenshot</b><input id="analyserScreenshot" type="file" accept="image/*"><img id="analyserPreview" class="analyserPreview"><div id="analyserOCRStatus" class="hint" style="margin-top:8px">No screenshot scanned yet.</div></div><div class="card"><input id="analyserSearch" class="analyserSearch" placeholder="Search teams, league or market…"><button class="analyserBtn primary" id="analyserLiveBtn" style="margin-top:9px;width:100%">⚡ Analyse screenshot with live last-5 data</button><div class="hint" style="margin-top:7px">Uses your football-data key to research the teams and calculate markets from their latest 5 completed matches.</div></div></div><div id="analyserResults"></div><div id="analyserBuilder" class="analyserBuilder"></div>`;document.getElementById('analyserScreenshot').onchange=e=>analyserScan(e.target.files[0]);document.getElementById('analyserSearch').oninput=analyserSearch;document.getElementById('analyserLiveBtn').onclick=async()=>{try{if(!analyserOCRText)throw new Error('Upload a fixture screenshot first.');document.getElementById('analyserLiveBtn').disabled=true;await liveAnalyseFixtures(analyserOCRText);}catch(e){toast(e.message||'Live analysis failed');document.getElementById('analyserOCRStatus').textContent=e.message||'Live analysis failed';}finally{document.getElementById('analyserLiveBtn').disabled=false;}};analyserRenderResults(ANALYSER_DATA);analyserRenderBuilder();}
-function showScreen(s){if(s==='personal'){document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));renderPersonalStats();return;}if((viewMode||!window.BB_IS_ADMIN) && s==='add') { if(!viewMode) toast('Admin account required'); s='dashboard'; }state.screen=s;state.expanded='';document.body.classList.toggle('statsMode',s==='stats');document.body.classList.toggle('viewOnly',viewMode);document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));if(s==='dashboard')renderDashboard(true);if(s==='live')renderLive();if(s==='builders')renderBuilders();if(s==='stats')renderStats();if(s==='analyser')renderAnalyser();if(s==='add')renderAdd()}
+function renderValueResults(){
+ if(!VALUE_STATE.results.length)return '<div class="empty" style="margin-top:12px">No scan results yet.</div>';
+ const min=(Vnum(document.getElementById('valueMinEv')?.value)||5)/100;
+ const all=[];for(const r of VALUE_STATE.results){if(r.error)continue;for(const m of r.markets)if(m.ev!=null&&m.ev>=min)all.push({...m,fixture:r.fixture,model:r.model});}
+ all.sort((a,b)=>b.ev-a.ev);
+ let html='<div class="sectionHead"><div><h2>🔥 Best value candidates</h2><div class="hint">Sorted by model EV. “Look for” is the minimum price that gives the model at least a 5% cushion above fair odds.</div></div></div><div class="valueGrid">';
+ if(!all.length)html+='<div class="empty">No markets currently meet the filter. That is OK — the scanner should not force a value bet.</div>';
+ for(const x of all.slice(0,30)){
+  const evp=x.ev*100;const fair=x.fair;const badge=evp>=10?'hot':evp>=5?'good':'warn';
+  html+=`<div class="valueCard ${badge==='hot'?'hot':''}"><div class="valueTop"><div><div class="valueTitle">${x.fixture.teams.home.name} vs ${x.fixture.teams.away.name}</div><div class="valueMeta">${x.fixture.league?.name||''} · ${new Date(x.fixture.fixture.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div></div><span class="valueBadge ${badge}">${evp>=10?'🔥 STRONG VALUE':evp>=5?'🟢 VALUE':'🟡 SMALL EDGE'}</span></div>
+  <div class="marketList"><div class="marketRowV"><div class="line"><b>${x.market}</b><b>Model ${(x.p*100).toFixed(1)}%</b></div><div class="valueNumbers"><div class="valueNum"><span>Fair odds</span><b>${fair?.toFixed(2)||'—'}</b></div><div class="valueNum"><span>Bookmaker best</span><b>${x.odds?.toFixed(2)||'Not available'}</b></div><div class="valueNum"><span>EV</span><b>${evp.toFixed(1)}%</b></div><div class="valueNum"><span>Look for</span><b>${(fair*1.05).toFixed(2)}</b></div></div><div class="tiny" style="margin-top:8px">If the bookmaker price is <b>higher than fair odds</b>, the model says the price is potentially favourable. The “look for” price adds a 5% buffer.</div></div></div></div>`;
+ }
+ html+='</div><div class="sectionHead"><h2>All scanned fixtures</h2></div><div class="card"><table class="valueTable"><tr><th>Fixture</th><th>Top model</th><th>Best EV</th></tr>'+VALUE_STATE.results.map(r=>{if(r.error)return `<tr><td>${r.fixture.teams.home.name} vs ${r.fixture.teams.away.name}</td><td colspan="2">Data error</td></tr>`;const m=r.markets.slice().sort((a,b)=>(b.ev??-9e9)-(a.ev??-9e9))[0];return `<tr><td>${r.fixture.teams.home.name} vs ${r.fixture.teams.away.name}</td><td>${m?.market||'—'}</td><td>${m?.ev!=null?(m.ev*100).toFixed(1)+'%':'—'}</td></tr>`}).join('')+'</table></div>';
+ return html;
+}
+
+function showScreen(s){if(s==='personal'){document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));renderPersonalStats();return;}if((viewMode||!window.BB_IS_ADMIN) && s==='add') { if(!viewMode) toast('Admin account required'); s='dashboard'; }state.screen=s;state.expanded='';document.body.classList.toggle('statsMode',s==='stats');document.body.classList.toggle('viewOnly',viewMode);document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));if(s==='dashboard')renderDashboard(true);if(s==='live')renderLive();if(s==='builders')renderBuilders();if(s==='stats')renderStats();if(s==='add')renderAdd();if(s==='value')renderValue()}
 function setFilter(f){state.filter=f;renderBuilders()}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));
 
@@ -1087,7 +893,7 @@ window.statsPeriod='all';document.body.classList.toggle('viewOnly',viewMode);
 // The other screens are prepared just after first paint instead of blocking startup.
 renderDashboard(true);
 const prepareOtherScreens=()=>{
-  try{renderLive();renderBuilders();renderStats();renderAnalyser();renderAdd();}catch(e){}
+  try{renderLive();renderBuilders();renderStats();renderAdd();renderValue();}catch(e){}
 };
 if('requestIdleCallback' in window) requestIdleCallback(prepareOtherScreens,{timeout:800});
 else setTimeout(prepareOtherScreens,0);
