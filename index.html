@@ -838,14 +838,84 @@ if(hc!=null&&ac!=null){const total=hc+ac;const over65=rate([...home.corners,...a
 if(hs!=null&&as!=null){const total=hs+as;push('Over 3.5 Match Shots on Target',Math.max(50,Math.min(96,Math.round(68+Math.min(18,(total-4)*6)))),`Average shots on target: ${hs.toFixed(1)} home + ${as.toFixed(1)} away = ${total.toFixed(1)} combined.`,'Over 1.5 Match Shots on Target',Math.max(92,Math.round(90+Math.min(6,total))));}
 if(hca!=null&&aca!=null){const total=hca+aca;push('Over 2.5 Match Cards',Math.max(50,Math.min(96,Math.round(70+Math.min(18,(total-2.5)*8)))),`Average cards: ${hca.toFixed(1)} home + ${aca.toFixed(1)} away = ${total.toFixed(1)} combined.`,'Over 1.5 Match Cards',Math.max(92,Math.round(91+Math.min(5,total))));}
 return markets.sort((a,b)=>b.confidence-a.confidence);}
-async function liveAnalyseFixtures(text){const status=document.getElementById('analyserOCRStatus');const lines=String(text||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);const pairs=[];for(const line of lines){const m=line.match(/(.+?)\s+(?:vs?\.?|v)\s+(.+?)(?:\s+\d{1,2}:\d{2}|$)/i);if(m)pairs.push([m[1].replace(/[^\w &'’-]/g,'').trim(),m[2].replace(/[^\w &'’-]/g,'').trim()]);}
- if(!pairs.length)throw new Error('I could not identify fixture pairs in the screenshot. Use a screenshot where the two team names are clearly visible.');
- const results=[];let count=0;let statsCalls=0;const statsCache=new Map();
+function analyserDateCandidates(text){
+  const out=[]; const now=new Date();
+  const add=(d)=>{if(d&&!isNaN(d)){const iso=d.toISOString().slice(0,10);if(!out.includes(iso))out.push(iso);}};
+  const re=/\b(\d{1,2})[./-](\d{1,2})(?:[./-](\d{2,4}))?\b/g; let m;
+  while((m=re.exec(String(text||'')))){let day=+m[1],mon=+m[2],yr=m[3]?+m[3]:now.getFullYear();if(yr<100)yr+=2000;if(day<=31&&mon<=12)add(new Date(yr,mon-1,day));}
+  if(!out.length){add(new Date(now));add(new Date(now.getTime()+86400000));}
+  return out.slice(0,4);
+}
+function analyserOcrLines(text){
+  const bad=/^(football|leagues?|matches?|filter|live|today|tomorrow|yesterday|search|customise|customize|events?|all|more|uefa|laliga|la liga|efl cup|premier league|england|spain|europe|playoff round|round|fifa|women|men)$/i;
+  return String(text||'').split(/\r?\n/).map(x=>x.replace(/[|{}[\]<>]/g,' ').replace(/\s+/g,' ').trim()).filter(x=>x.length>=3&&!bad.test(x)&&!/^\d{1,2}:\d{2}$/.test(x)&&!/^\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?$/.test(x));
+}
+function analyserTokenScore(a,b){
+  const na=analyserNorm(a), nb=analyserNorm(b); if(!na||!nb)return 0;
+  if(na.includes(nb)||nb.includes(na))return 1;
+  const at=new Set(na.split(' ')), bt=nb.split(' '); let hit=0;bt.forEach(t=>{if(t.length>2&&[...at].some(x=>x===t||x.includes(t)||t.includes(x)))hit++;});
+  return hit/Math.max(1,bt.length);
+}
+async function analyserFixturesByDates(dates){
+  const all=[]; for(const d of dates){try{const rows=await apiFootball('/fixtures?date='+d);rows.forEach(x=>{if(x?.fixture?.id)all.push(x)});}catch(e){console.warn('Date fixture lookup failed',d,e)}}
+  const map=new Map();all.forEach(x=>map.set(x.fixture.id,x));return [...map.values()];
+}
+function analyserLineTeamScore(line,name){const a=analyserNorm(line),b=analyserNorm(name);if(!a||!b)return 0;if(a===b||a.includes(b)||b.includes(a))return 1;const d=analyserDistance(a,b);return d<=Math.max(2,Math.floor(Math.max(a.length,b.length)*.30))?0.78:analyserTokenScore(line,name);}
+function analyserMatchOcrToFixtures(text, fixtures){
+  const lines=analyserOcrLines(text); const compact=analyserNorm(text); const found=[];
+  for(const f of fixtures){const h=f.teams?.home?.name||'', a=f.teams?.away?.name||'';const hs=Math.max(...lines.map(l=>analyserLineTeamScore(l,h)),0), as=Math.max(...lines.map(l=>analyserLineTeamScore(l,a)),0);const wholeH=analyserLineTeamScore(compact,h),wholeA=analyserLineTeamScore(compact,a);if((hs>=.70&&as>=.70)||(wholeH>=.78&&wholeA>=.78))found.push(f);}
+  return found;
+}
+function analyserGuessPairs(text){
+  const lines=analyserOcrLines(text); const pairs=[];
+  // OCR from fixture-list apps commonly puts home/away on adjacent lines.
+  for(let i=0;i<lines.length-1;i++){
+    const a=lines[i],b=lines[i+1];
+    if(a.length>2&&b.length>2&&a.length<32&&b.length<32&&/[a-z]/i.test(a)&&/[a-z]/i.test(b)){
+      if(!/^(over|under|corners?|cards?|shots?|goals?|win|draw|loss|real|total|odds|price|league|filter|matches?|today|tomorrow)$/i.test(a)&&!/^\d/.test(a)&&!/^\d/.test(b)) pairs.push([a,b]);
+    }
+  }
+  const seen=new Set();return pairs.filter(p=>{const k=analyserNorm(p.join('|'));if(seen.has(k))return false;seen.add(k);return true;}).slice(0,12);
+}
+async function liveAnalyseFixtures(text){
+ const status=document.getElementById('analyserOCRStatus'); status.textContent='Finding fixtures from the screenshot…';
+ const dates=analyserDateCandidates(text); let fixtures=await analyserFixturesByDates(dates); let selected=analyserMatchOcrToFixtures(text,fixtures);
+ // If the screenshot's date is old/missing or the fixture list endpoint did not match, use team search as a fallback.
+ if(!selected.length){const pairs=analyserGuessPairs(text);for(const [hn,an] of pairs.slice(0,10)){try{const ht=await apiFindTeam(hn),at=await apiFindTeam(an);if(ht&&at){const rows=await apiFootball('/fixtures?team='+ht.id+'&next=20');const exact=rows.find(x=>{const h=x.teams?.home?.name||'',a=x.teams?.away?.name||'';return analyserLineTeamScore(h,hn)>=.70&&analyserLineTeamScore(a,an)>=.70;});if(exact)selected.push(exact);}}catch(e){console.warn('Team fallback failed',hn,an,e)}}}
+ if(!selected.length) throw new Error('I read the screenshot, but could not match the fixtures to the football database. Try the same screenshot again — the app will use a larger OCR crop automatically.');
+ const results=[]; let count=0, statsCalls=0; const statsCache=new Map();
  async function getEnrichedFixture(id){if(statsCache.has(id))return statsCache.get(id);let data=[];try{data=await apiFootball('/fixtures/statistics?fixture='+id);statsCalls++;}catch(e){console.warn('Statistics unavailable for fixture',id,e)}statsCache.set(id,data);return data;}
- for(const [hn,an] of pairs.slice(0,10)){status.textContent=`Researching ${hn} vs ${an}…`;try{const ht=await apiFindTeam(hn),at=await apiFindTeam(an);if(!ht||!at)continue;const hg=await apiFootball('/fixtures?team='+ht.id+'&last=5'),ag=await apiFootball('/fixtures?team='+at.id+'&last=5');const hs=recentSummary(hg,ht.id),as=recentSummary(ag,at.id);hs.corners=[];hs.cards=[];hs.sot=[];hs.shots=[];as.corners=[];as.cards=[];as.sot=[];as.shots=[];const ids=[...new Map([...hg,...ag].filter(g=>g?.fixture?.id).map(g=>[g.fixture.id,g.fixture.id])).values()];for(const id of ids){if(statsCalls>=70)break;const data=await getEnrichedFixture(id);if(!data.length)continue;const f={statistics:data};const g=[...hg,...ag].find(x=>Number(x.fixture?.id)===Number(id));if(g){addFixtureStats(hs,f,ht.id);addFixtureStats(as,f,at.id);}}const markets=marketFromSummaries(hs,as);for(const m of markets)results.push({fixture:`${ht.name} vs ${at.name}`,date:'Upcoming',time:'',league:'Live data',...m});count++;}catch(e){console.warn(e)}}
- analyserLiveData=results;status.textContent=`Live analysis complete: ${count} fixture(s), including goals, corners, cards and shots on target where data is available. ${statsCalls} statistics calls used.`;analyserRenderResults(results);}
-
-async function analyserScan(file){if(!file)return;try{const status=document.getElementById('analyserOCRStatus');status.textContent='Reading screenshot…';const img=document.getElementById('analyserPreview');img.src=URL.createObjectURL(file);img.style.display='block';if(!window.Tesseract){await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc);});}const r=await Tesseract.recognize(file,'eng',{logger:m=>{if(m.status==='recognizing text')status.textContent='Scanning… '+Math.round((m.progress||0)*100)+'%';}});analyserOCRText=r.data.text||'';const matches=analyserFindMatches(analyserOCRText);status.textContent=matches.length?'Found '+new Set(matches.map(x=>x.fixture)).size+' fixture(s).':'No confident fixture matches found — try a full-screen screenshot with team names visible.';analyserRenderResults(matches);}catch(e){console.error(e);document.getElementById('analyserOCRStatus').textContent='Could not read screenshot. Try a clearer/full-screen screenshot.';}}
+ for(const fixture of selected.slice(0,10)){
+   const hn=fixture.teams?.home?.name, an=fixture.teams?.away?.name; status.textContent=`Researching ${hn} vs ${an}…`;
+   try{const ht=fixture.teams.home,at=fixture.teams.away;const hg=await apiFootball('/fixtures?team='+ht.id+'&last=5'),ag=await apiFootball('/fixtures?team='+at.id+'&last=5');const hs=recentSummary(hg,ht.id),as=recentSummary(ag,at.id);hs.corners=[];hs.cards=[];hs.sot=[];hs.shots=[];as.corners=[];as.cards=[];as.sot=[];as.shots=[];
+     const ids=[...new Map([...hg,...ag].filter(g=>g?.fixture?.id).map(g=>[g.fixture.id,g])).values()];
+     for(const g of ids){if(statsCalls>=70)break;const data=await getEnrichedFixture(g.fixture.id);if(data.length)addFixtureStats(hs,{statistics:data},ht.id),addFixtureStats(as,{statistics:data},at.id);}
+     const markets=marketFromSummaries(hs,as); for(const m of markets)results.push({fixture:`${hn} vs ${an}`,date:fixture.fixture?.date?new Date(fixture.fixture.date).toLocaleDateString('en-GB'): 'Upcoming',time:fixture.fixture?.date?new Date(fixture.fixture.date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'',league:fixture.league?.name||'Live data',...m});count++;
+   }catch(e){console.warn('Fixture analysis failed',fixture,e)}
+ }
+ analyserLiveData=results; status.textContent=`Live analysis complete: ${count} fixture(s). Last-5 form plus corners, cards and shots on target where data is available. ${statsCalls} statistics calls used.`; analyserRenderResults(results);
+}
+async function analyserScan(file){
+ if(!file)return; try{
+   const status=document.getElementById('analyserOCRStatus'); status.textContent='Preparing screenshot…';
+   const preview=document.getElementById('analyserPreview'); preview.src=URL.createObjectURL(file); preview.style.display='block';
+   if(!window.Tesseract){await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc);});}
+   const img=await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=URL.createObjectURL(file);});
+   const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;
+   const candidates=[];
+   const addCrop=(name,x,y,w,h,scale=2.8)=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*scale));c.height=Math.max(1,Math.round(h*scale));const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,x,y,w,h,0,0,c.width,c.height);const p=ctx.getImageData(0,0,c.width,c.height);for(let i=0;i<p.data.length;i+=4){const r=p.data[i],g=p.data[i+1],b=p.data[i+2];const yv=(r*299+g*587+b*114)/1000;const v=yv>150?255:0;p.data[i]=p.data[i+1]=p.data[i+2]=v;}ctx.putImageData(p,0,0);candidates.push({name,src:c.toDataURL('image/png')});};
+   addCrop('full',0,0,W,H,Math.min(2.5,Math.max(1.5,1800/W)));
+   addCrop('middle',W*.03,H*.12,W*.94,H*.76,2.5);
+   addCrop('left-fixtures',0,H*.22,W*.62,H*.58,3.2);
+   addCrop('center-fixtures',W*.10,H*.18,W*.80,H*.68,2.8);
+   addCrop('portrait-fixtures',0,H*.28,W*.55,H*.50,3.4);
+   const texts=[]; let best='';
+   for(let i=0;i<candidates.length;i++){status.textContent=`Scanning fixture area ${i+1}/${candidates.length}…`;try{const r=await Tesseract.recognize(candidates[i].src,'eng',{logger:m=>{if(m.status==='recognizing text'&&m.progress>.88)status.textContent=`Scanning fixture area ${i+1}/${candidates.length}…`;},tessedit_pageseg_mode:'11',preserve_interword_spaces:'1'});if(r?.data?.text){texts.push(r.data.text);if(r.data.text.length>best.length)best=r.data.text;}}catch(e){console.warn('OCR crop failed',candidates[i].name,e)}}
+   analyserOCRText=texts.join('\n');
+   const lines=analyserOcrLines(analyserOCRText); const likely=analyserGuessPairs(analyserOCRText); status.textContent=`Screenshot read: ${lines.length} useful text lines${likely.length?` and ${likely.length} possible fixture pair${likely.length===1?'':'s'}`:''}. Tap ⚡ Analyse screenshot with live last-5 data.`;
+   analyserRenderResults(analyserFindMatches(analyserOCRText));
+ }catch(e){console.error(e);document.getElementById('analyserOCRStatus').textContent='Could not process screenshot. Try again — the analyser now supports full screenshots and screenshots containing a smaller fixture image.';}
+}
 function renderAnalyser(){document.getElementById('analyser').innerHTML=`<div class="sectionHead"><h2>Bet Builder Analyser</h2></div><div class="analyserHero"><h2>🔎 Find betting opportunities</h2><p>Upload a fixture screenshot, then run live analysis. The app reads the teams, pulls each team’s latest 5 completed matches and calculates goal/BTTS opportunities with safer alternatives. The original spreadsheet opportunities remain available as a fallback.</p></div><div class="analyserTools"><div class="analyserUpload"><b>📸 Import fixture screenshot</b><input id="analyserScreenshot" type="file" accept="image/*"><img id="analyserPreview" class="analyserPreview"><div id="analyserOCRStatus" class="hint" style="margin-top:8px">No screenshot scanned yet.</div></div><div class="card"><input id="analyserSearch" class="analyserSearch" placeholder="Search teams, league or market…"><button class="analyserBtn primary" id="analyserLiveBtn" style="margin-top:9px;width:100%">⚡ Analyse screenshot with live last-5 data</button><div class="hint" style="margin-top:7px">Uses your football-data key to research the teams and calculate markets from their latest 5 completed matches.</div></div></div><div id="analyserResults"></div><div id="analyserBuilder" class="analyserBuilder"></div>`;document.getElementById('analyserScreenshot').onchange=e=>analyserScan(e.target.files[0]);document.getElementById('analyserSearch').oninput=analyserSearch;document.getElementById('analyserLiveBtn').onclick=async()=>{try{if(!analyserOCRText)throw new Error('Upload a fixture screenshot first.');document.getElementById('analyserLiveBtn').disabled=true;await liveAnalyseFixtures(analyserOCRText);}catch(e){toast(e.message||'Live analysis failed');document.getElementById('analyserOCRStatus').textContent=e.message||'Live analysis failed';}finally{document.getElementById('analyserLiveBtn').disabled=false;}};analyserRenderResults(ANALYSER_DATA);analyserRenderBuilder();}
 function showScreen(s){if(s==='personal'){document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));renderPersonalStats();return;}if((viewMode||!window.BB_IS_ADMIN) && s==='add') { if(!viewMode) toast('Admin account required'); s='dashboard'; }state.screen=s;state.expanded='';document.body.classList.toggle('statsMode',s==='stats');document.body.classList.toggle('viewOnly',viewMode);document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));if(s==='dashboard')renderDashboard(true);if(s==='live')renderLive();if(s==='builders')renderBuilders();if(s==='stats')renderStats();if(s==='analyser')renderAnalyser();if(s==='add')renderAdd()}
 function setFilter(f){state.filter=f;renderBuilders()}
