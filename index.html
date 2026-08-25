@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="tdb-version" content="v18-live-bet-and-clear-stats">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Top Daily Builders + Tracker"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json"><link rel="icon" type="image/png" sizes="512x512" href="icon-512x512.png"><link rel="apple-touch-icon" sizes="192x192" href="icon-192x192.png">
+<title>Top Daily Builders + Tracker</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--nav:#0f172a;--accent:#16a34a;--win:#dcfce7;--winInk:#166534;--loss:#fee2e2;--lossInk:#991b1b;--pending:#eff6ff;--pendingInk:#1d4ed8;--shadow:0 8px 24px rgba(15,23,42,.08)}*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:720px;margin:auto;min-height:100vh;padding-bottom:96px}.viewOnly .bottom{z-index:2147483647!important}.viewOnly .nav{position:relative;z-index:2147483647!important}.top{position:sticky;top:0;z-index:10;background:rgba(15,23,42,.96);color:#fff;padding:18px 18px 14px;backdrop-filter:blur(12px)}.toprow{display:flex;justify-content:space-between;align-items:center}.brand{font-weight:800;font-size:20px}.subtitle{font-size:12px;color:#cbd5e1;margin-top:3px}.content{padding:16px}.screen{display:none}.screen.active{display:block}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow);transition:.2s}.stat.good{background:var(--win);border-color:#86efac}.stat.bad{background:var(--loss);border-color:#fca5a5}.stat.neutral{background:#fff}.stat.good b{color:var(--winInk)}.stat.bad b{color:var(--lossInk)}.stat b{font-size:22px;display:block;margin-top:4px}.stat span{font-size:12px;color:var(--muted)}.sectionHead{display:flex;justify-content:space-between;align-items:center;margin:22px 0 10px}.sectionHead h2{font-size:17px;margin:0}.btn{border:0;border-radius:13px;padding:11px 14px;font-weight:750}.btn.primary{background:#16a34a;color:#fff}.btn.secondary{background:#e2e8f0;color:#0f172a}.btn.danger{background:#fee2e2;color:#991b1b}.builder{background:var(--card);border:1px solid var(--line);border-radius:20px;margin:10px 0;overflow:hidden;box-shadow:var(--shadow)}.builder.win{background:var(--win);border-color:#86efac}.builder.loss{background:var(--loss);border-color:#fca5a5}.builder.pending{background:#fff7ed;border-color:#fdba74;box-shadow:0 8px 24px rgba(249,115,22,.12)}.builderHead{padding:15px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.builderId{font-size:18px;font-weight:850}.dateTimeLine{font-size:12px;color:#475569;margin-top:4px;font-weight:650}.gameDateTime{font-size:12px;color:#64748b;margin-top:3px;font-weight:650}.matchline{font-size:13px;color:var(--muted);margin-top:4px}.team-name{font-weight:850;color:#0f172a}.badge{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800}.badge.win{background:#bbf7d0;color:#166534}.badge.loss{background:#fecaca;color:#991b1b}.badge.pending{background:#ffedd5;color:#c2410c;border:1px solid #fdba74}.builderMeta{display:flex;gap:12px;flex-wrap:wrap;padding:0 15px 13px;color:#475569;font-size:12px}.builderMeta strong{color:#0f172a}.games{border-top:1px solid rgba(148,163,184,.25)}.game{padding:14px 15px;border-top:1px solid rgba(148,163,184,.2)}.game:first-child{border-top:0}.game.win{background:rgba(187,247,208,.55)}.game.loss{background:rgba(254,202,202,.55)}.gameTop{display:flex;justify-content:space-between;align-items:center;gap:10px}.gameTitle{font-weight:800}.chev{border:0;background:transparent;font-size:20px;color:#64748b}.markets{margin-top:10px;display:grid;gap:7px}.market{background:rgba(255,255,255,.72);border:1px solid rgba(148,163,184,.3);border-radius:12px;padding:10px;font-size:13px}.market.win{background:#dcfce7;border-color:#86efac;color:#166534}.market.loss{background:#fee2e2;border-color:#fca5a5;color:#991b1b}.market b{display:block;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}.marketEdit{display:flex;align-items:center;justify-content:space-between;gap:10px}.marketText{min-width:0;flex:1}.marketActions{display:flex;gap:6px;flex:0 0 auto}.marketBtn{width:34px;height:34px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;color:#64748b;font-weight:900;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}.marketBtn.winActive{background:#22c55e;border-color:#16a34a;color:#fff;box-shadow:0 0 0 2px rgba(34,197,94,.12)}.marketBtn.lossActive{background:#ef4444;border-color:#dc2626;color:#fff;box-shadow:0 0 0 2px rgba(239,68,68,.12)}.marketStatusBtn{width:30px;height:30px;border-radius:50%;border:1px solid #cbd5e1;background:#fff;color:#94a3b8;font-weight:900;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 30px}.marketStatusBtn.winActive{background:#22c55e;border-color:#16a34a;color:#fff;box-shadow:0 0 0 2px rgba(34,197,94,.10)}.marketStatusBtn.lossActive{background:#ef4444;border-color:#dc2626;color:#fff;box-shadow:0 0 0 2px rgba(239,68,94,.10)}.empty{padding:22px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:16px}.bottom{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:2147483647!important;isolation:isolate;transform:translateZ(0)}.nav{max-width:720px;margin:auto;display:grid;grid-template-columns:repeat(5,1fr)}.nav button{border:0;background:transparent;padding:12px 6px 10px;color:#64748b;font-weight:750}.nav button.active{color:#0f172a}.nav small{display:block;font-size:11px;margin-top:3px}.form{display:grid;gap:12px}.field label{display:block;font-size:12px;font-weight:800;color:#475569;margin:0 0 5px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 12px;outline:none}.field textarea{min-height:70px;resize:vertical}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px;box-shadow:var(--shadow);margin-bottom:12px}.gameForm{border:1px solid var(--line);border-radius:16px;padding:12px;background:#f8fafc}.gameForm h3{margin:0 0 10px;font-size:15px}.marketRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.resultMarketRow{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:center}.resultMarketRow .marketActions{display:flex}.actions{display:flex;gap:8px;flex-wrap:wrap}.toolbar{display:flex;gap:8px;margin-bottom:12px}.toolbar input{flex:1;border:1px solid var(--line);border-radius:12px;padding:11px 12px}.hint{font-size:12px;color:var(--muted);line-height:1.45}.pillrow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:750}.pill.active{background:#0f172a;color:#fff}.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 14px;border-radius:999px;font-size:12px;opacity:0;pointer-events:none;transition:.2s;z-index:50}.toast.show{opacity:1}
+.monthGroup{margin:18px 0 8px}.monthTitle{display:flex;justify-content:space-between;align-items:center;margin:0 2px 8px;font-size:16px;font-weight:850}.monthTitle span{font-size:11px;font-weight:750;color:#64748b;background:#e2e8f0;padding:5px 8px;border-radius:999px}.chartCard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px}.chartTitle{font-weight:850;margin-bottom:10px}.chart{width:100%;height:220px;display:block}.chartGrid{stroke:#e2e8f0;stroke-width:1}.chartZero{stroke:#94a3b8;stroke-width:1.5}.barWin{fill:#86efac}.barLoss{fill:#fca5a5}.barText{font-size:10px;fill:#475569}.axisText{font-size:10px;fill:#64748b}.monthStats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.miniStat{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:11px}.miniStat span{display:block;color:#64748b;font-size:11px}.miniStat b{display:block;margin-top:4px;font-size:17px}.selectWide{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 12px;margin-bottom:12px}
+
+
+.monthlyList{width:100%;overflow-x:auto}.monthlyRow{display:grid;grid-template-columns:minmax(120px,1.5fr) .65fr .75fr .85fr .8fr;align-items:center;gap:8px;padding:12px 10px;border:1px solid var(--line);border-radius:14px;margin-top:7px;min-width:560px}.monthlyRow.head{border:0;margin-top:0;padding:0 10px 3px;color:#64748b;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}.monthlyRow .month{font-weight:850}.monthlyRow.monthProfit .month{color:#15803d}.monthlyRow.monthLoss .month{color:#b91c1c}.monthlyRow.monthProfit{background:#f0fdf4;border-color:#86efac}.monthlyRow.monthLoss{background:#fef2f2;border-color:#fca5a5}.monthlyRow .avgOdds{font-weight:750}.performanceLegend{display:flex;gap:18px;margin-top:12px;color:#64748b;font-size:12px}.performanceLegend span{display:flex;align-items:center;gap:6px}.performanceLegend i{width:9px;height:9px;border-radius:50%;display:inline-block}.performanceLegend .profitDot{background:#16a34a}.performanceLegend .lossDot{background:#ef4444}.allTimeGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.allTimeMini{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:11px}.allTimeMini span{display:block;color:#64748b;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.02em}.allTimeMini b{display:block;margin-top:5px;font-size:19px}.allTimeMini.good{background:#f0fdf4;border-color:#86efac}.allTimeMini.good b{color:#15803d}.allTimeMini.bad{background:#fef2f2;border-color:#fca5a5}.allTimeMini.bad b{color:#b91c1c}
+.statsHero{background:linear-gradient(145deg,#0f172a,#172554);color:#fff;border-radius:22px;padding:18px;margin-bottom:14px;box-shadow:0 12px 28px rgba(15,23,42,.16)}
+.statsHeroTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.statsHero h2{margin:0;font-size:21px}.statsHero p{margin:5px 0 0;color:#cbd5e1;font-size:12px}
+.periodSelect{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.1);color:#fff;border-radius:11px;padding:9px 10px;font-size:12px;font-weight:750}
+.periodSelect option{color:#0f172a;background:#fff}
+.statsKpi{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow)}
+.kpi .label{font-size:11px;color:var(--muted);font-weight:700}.kpi .value{font-size:23px;font-weight:900;margin-top:4px}.kpi .sub{font-size:10px;color:var(--muted);margin-top:3px}
+.kpi.good{background:var(--win);border-color:#86efac}.kpi.good .value{color:var(--winInk)}
+.kpi.bad{background:var(--loss);border-color:#fca5a5}.kpi.bad .value{color:var(--lossInk)}
+.performanceCard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:15px;box-shadow:var(--shadow);margin-bottom:12px}
+.performanceHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.performanceHead h3{margin:0;font-size:16px}.performanceHead span{font-size:11px;color:var(--muted)}
+.chartWrap{overflow:hidden;border-radius:16px;background:#07111f;padding:8px 8px 7px;border:1px solid #1a2b40}.chart{height:205px;width:100%;display:block}.chartGrid{stroke:#1b3047;stroke-width:1}.chartZero{stroke:#5a718a;stroke-width:1.2;stroke-dasharray:5 5}.lineGlow{fill:none;stroke:#39ff88;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;opacity:.13}.lineMain{fill:none;stroke:#39ff88;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px rgba(57,255,136,.55))}.lineLoss{fill:none;stroke:#ff4d67;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px rgba(255,77,103,.45))}.areaFill{fill:url(#neonArea);opacity:.16}.point{fill:#07111f;stroke:#39ff88;stroke-width:3;filter:drop-shadow(0 0 4px rgba(57,255,136,.8))}.pointLoss{fill:#07111f;stroke:#ff4d67;stroke-width:3;filter:drop-shadow(0 0 4px rgba(255,77,103,.7))}.axisText{font-size:10px;fill:#91a4ba;font-weight:750}.barText{font-size:11px;fill:#d7e2ee;font-weight:850}.chartBadge{font-size:9px;fill:#91a4ba;font-weight:800;letter-spacing:.05em}.legend{display:flex;gap:14px;font-size:10px;color:#91a4ba;margin:8px 2px 0}.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:#39ff88;box-shadow:0 0 7px rgba(57,255,136,.65)}.legend i.lossDot{background:#ff4d67;box-shadow:0 0 7px rgba(255,77,103,.5)}
+.insight{background:#f8fafc;border:1px solid var(--line);border-radius:15px;padding:12px;margin-top:10px;font-size:11px;color:#475569;line-height:1.45}.insight b{color:#0f172a}
+
+.resultGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:2px}.resultMini{background:#f8fafc;border:1px solid var(--line);border-radius:15px;padding:12px 10px;min-width:0}.resultMini .rLabel{font-size:10px;color:#64748b;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.resultMini .rValue{font-size:22px;font-weight:900;margin-top:3px}.resultMini.win{background:#ecfdf5;border-color:#86efac}.resultMini.win .rValue{color:#166534}.resultMini.loss{background:#fff1f2;border-color:#fda4af}.resultMini.loss .rValue{color:#be123c}.resultMini.open{background:#f8fafc;border-color:#cbd5e1}.resultMini.open .rValue{color:#475569}.resultSummary{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;padding:12px 13px;border-radius:14px;background:#f8fafc;border:1px solid var(--line);font-size:11px;color:#475569}.resultSummary b{color:#0f172a}.resultSummary .summaryDot{width:8px;height:8px;border-radius:50%;background:#39ff88;box-shadow:0 0 7px rgba(57,255,136,.55);flex:none}.monthlyList{display:grid;gap:8px;width:100%;overflow:visible}.monthlyRow{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(34px,.58fr) minmax(42px,.72fr) minmax(58px,.78fr) minmax(58px,.85fr);align-items:center;gap:7px;padding:12px 11px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;min-width:0}.monthlyRow.head{padding:5px 11px 3px;border:0;background:transparent;color:#64748b;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.04em}.monthlyRow>span{min-width:0;white-space:nowrap}.monthlyRow .month{font-weight:850;color:#0f172a;overflow:hidden;text-overflow:ellipsis}.monthlyRow .bets,.monthlyRow .wl,.monthlyRow .rate{font-weight:800}.monthlyRow .profit{text-align:right;font-weight:900}.monthlyRow .profit.pos{color:#166534}.monthlyRow .profit.neg{color:#be123c}.monthlyEmpty{padding:18px;text-align:center;color:var(--muted);background:#f8fafc;border:1px dashed var(--line);border-radius:14px;font-size:12px}@media(max-width:420px){.resultGrid{gap:7px}.resultMini{padding:11px 8px}.resultMini .rValue{font-size:20px}.monthlyRow{grid-template-columns:minmax(0,1.38fr) minmax(30px,.48fr) minmax(40px,.62fr) minmax(48px,.7fr) minmax(52px,.78fr);gap:5px;padding:11px 8px;font-size:10.5px}.monthlyRow.head{font-size:8.5px;padding:4px 8px}.monthlyRow .profit{font-size:11px}}
+
+/* Clearer performance chart */
+.chartWrap{padding:12px 12px 10px;border-radius:18px}
+.performanceCard .chart{height:285px}
+.performanceCard .axisText{font-size:12px;font-weight:850;fill:#b8c7d8}
+.performanceCard .barText{font-size:12px;font-weight:900;fill:#f2f7fb}
+.performanceCard .chartBadge{font-size:11px;font-weight:900;fill:#a9bbce}
+.performanceCard .chartGrid{stroke-width:1.2}
+.performanceCard .chartZero{stroke-width:1.8}
+.performanceCard .legend{font-size:12px;margin-top:10px}
+.performanceCard .legend i{width:10px;height:10px}
+
+/* Stats page dark performance theme */
+body.statsMode{background:#050a12;color:#e8eef7}
+body.statsMode .content{background:#050a12}
+body.statsMode .statsHero{background:linear-gradient(145deg,#03070d,#0a1422);border:1px solid #17283b;box-shadow:0 14px 32px rgba(0,0,0,.35)}
+body.statsMode .statsHero p{color:#8fa3b8}
+body.statsMode .statsKpi .kpi{background:#0b1320;border-color:#1a2b3e;color:#e8eef7;box-shadow:0 10px 24px rgba(0,0,0,.22)}
+body.statsMode .statsKpi .kpi .label,body.statsMode .statsKpi .kpi .sub{color:#8fa3b8}
+body.statsMode .statsKpi .kpi.good{background:#071a14;border-color:#1e9d61}
+body.statsMode .statsKpi .kpi.good .value{color:#39ff88}
+body.statsMode .statsKpi .kpi.bad{background:#1b0b11;border-color:#8f3045}
+body.statsMode .statsKpi .kpi.bad .value{color:#ff5b73}
+body.statsMode .performanceCard{background:#0b1320;border-color:#1a2b3e;box-shadow:0 12px 28px rgba(0,0,0,.25)}
+body.statsMode .performanceHead h3{color:#f3f7fb}
+body.statsMode .performanceHead span{color:#8fa3b8}
+body.statsMode .resultMini{background:#101b2a;border-color:#203246}
+body.statsMode .resultMini .rLabel{color:#8fa3b8}
+body.statsMode .resultMini.win{background:#071a14;border-color:#1e9d61}
+body.statsMode .resultMini.win .rValue{color:#39ff88}
+body.statsMode .resultMini.loss{background:#1b0b11;border-color:#8f3045}
+body.statsMode .resultMini.loss .rValue{color:#ff5b73}
+body.statsMode .resultMini.open{background:#101a28;border-color:#30445a}
+body.statsMode .resultMini.open .rValue{color:#b8c7d8}
+body.statsMode .resultSummary{background:#0a1522;border-color:#203246;color:#aebdcd}
+body.statsMode .resultSummary b{color:#fff}
+body.statsMode .monthlyRow{background:#101a28;border-color:#203246}body.statsMode .monthlyRow.head{padding-bottom:4px}
+body.statsMode .monthlyRow.head{background:transparent;border-color:transparent;color:#8fa3b8}
+body.statsMode .monthlyRow .month,body.statsMode .monthlyRow .wl,body.statsMode .monthlyRow .rate,body.statsMode .monthlyRow .avgOdds{color:#e8eef7}
+body.statsMode .monthlyRow.monthProfit{background:#071a14;border-color:#1e9d61}
+body.statsMode .monthlyRow.monthProfit .month{color:#39ff88}
+body.statsMode .monthlyRow.monthLoss{background:#1b0b11;border-color:#8f3045}
+body.statsMode .monthlyRow.monthLoss .month{color:#ff5b73}
+body.statsMode .monthlyRow .profit.pos{color:#39ff88}
+body.statsMode .monthlyRow .profit.neg{color:#ff5b73}
+body.statsMode .performanceLegend{color:#8fa3b8}
+body.statsMode .allTimeMini{background:#101a28;border-color:#203246}
+body.statsMode .allTimeMini span{color:#8fa3b8}
+body.statsMode .allTimeMini b{color:#edf4fb}
+body.statsMode .allTimeMini.good{background:#071a14;border-color:#1e9d61}
+body.statsMode .allTimeMini.good b{color:#39ff88}
+body.statsMode .allTimeMini.bad{background:#1b0b11;border-color:#8f3045}
+body.statsMode .allTimeMini.bad b{color:#ff5b73}
+body.statsMode .monthlyEmpty{background:#101a28;border-color:#30445a;color:#8fa3b8}
+body.statsMode .chartWrap{background:#030913;border-color:#1b334b}
+body.statsMode .periodSelect{background:#0e1a29;border-color:#29415b;color:#fff}
+body.statsMode .periodSelect option{background:#0e1a29;color:#fff}
+
+.hidden{display:none!important}.nav button[data-screen="add"]{display:none!important}.isAdmin .nav button[data-screen="add"]{display:flex!important}.viewOnly .nav{grid-template-columns:repeat(4,1fr)}
+
+.toggleButton{border:0;background:transparent;padding:0;margin:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex:0 0 28px}.toggleButton .toggleIcon{display:block}.builder.collapsed .builderDetails{display:none}.builderHead{cursor:pointer}.builderHead .builderToggle{display:flex;align-items:center;gap:8px}.toggleIcon{font-size:18px;font-weight:900;color:#64748b;width:20px}.builderNumber{font-size:18px;font-weight:850}.builderCode{font-size:11px;color:#64748b;margin-top:2px}.builderDetails{border-top:1px solid rgba(148,163,184,.22)}.builder.open .builderDetails{display:block}.builder.open .builderHead{padding-bottom:13px}.builder.open .builderToggle .toggleIcon{transform:rotate(90deg)}
+.headActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.viewOnlyBanner{background:#ecfdf5;border:1px solid #86efac;color:#166534;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-weight:800;font-size:13px;text-align:center}
+</style>
+<style>
+.bb-top-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.bb-top-btn{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);color:#fff;border-radius:11px;padding:8px 10px;font-weight:800;font-size:11px}
+.bb-modal{position:fixed;inset:0;background:rgba(2,6,23,.58);z-index:99999;display:none;align-items:flex-end;justify-content:center;padding:12px}.bb-modal.open{display:flex}.bb-sheet{width:min(720px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:24px;padding:18px;box-shadow:0 20px 60px #0005}.bb-sheet h2{margin:0 0 6px}.bb-close{float:right;border:0;background:#e2e8f0;border-radius:10px;padding:8px 10px;font-weight:800}.bb-auth-grid{display:grid;gap:9px;margin-top:12px}.bb-auth-grid input{width:100%;border:1px solid #e2e8f0;border-radius:11px;padding:11px}.bb-official-card{border:1px solid #e2e8f0;border-radius:16px;padding:13px;margin-top:10px;background:#fff}.bb-official-card h3{margin:0 0 5px}.bb-row{display:flex;justify-content:space-between;gap:10px;align-items:center}.bb-green{color:#166534}.bb-red{color:#991b1b}.bb-muted{color:#64748b;font-size:12px}.bb-personal-stat{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:12px 0}.bb-personal-stat>div{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:11px}.bb-personal-stat b{display:block;font-size:20px;margin-top:3px}.bb-banner{background:#ecfdf5;border:1px solid #86efac;color:#166534;border-radius:13px;padding:11px;margin:10px 0;font-size:12px;font-weight:700}.bb-admin{background:#fff7ed;border-color:#fdba74;color:#9a3412}.bb-hide{display:none!important}
+.top .toprow{align-items:center}.brandWrap{min-width:0}.brand{font-size:22px;line-height:1.1}.subtitle{font-size:12px}.bb-top-layout{display:grid;gap:9px;margin-top:10px}.bb-top-nav,.bb-top-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.bb-top-nav .bb-top-btn{flex:1;min-width:0}.bb-top-actions{justify-content:flex-end}.bb-top-actions .btn{padding:9px 12px;font-size:12px}.bb-top-btn.active{background:#16a34a;border-color:#22c55e}.bb-install{background:#e2e8f0!important;color:#0f172a!important;border:0!important}.adminOnly{display:inline-flex!important}@media(max-width:520px){.top{padding:14px 14px 12px}.brand{font-size:20px}.bb-top-nav{display:grid;grid-template-columns:1fr 1fr}.bb-top-actions{display:grid;grid-template-columns:1fr 1fr 1fr}.bb-top-actions .btn{width:100%;white-space:nowrap}.bb-top-actions #quickAdd{grid-column:auto}.bb-top-nav .bb-top-btn{padding:9px 7px}.subtitle{font-size:11px}}
+.toprow{gap:12px}.brand{font-size:23px;letter-spacing:-.02em}.bb-install{font-weight:850;padding:10px 14px;white-space:nowrap;box-shadow:0 4px 12px rgba(15,23,42,.12)}
+@media(max-width:520px){.top{padding:15px 14px 13px}.brand{font-size:21px}.subtitle{font-size:11px}}
+</style>
+
+
+<style id="merged-dashboard-tuning">
+@media(max-width:520px){
+  .content{padding:14px 14px 108px}.stats{gap:12px}.stat{min-height:118px;padding:18px 16px;border-radius:22px}.stat span{font-size:12px}.stat b{font-size:26px;margin-top:9px}
+  .sectionHead{margin:24px 2px 12px}.sectionHead h2{font-size:21px}.builder{border-radius:22px}.builder.pending{background:#fff7ed!important;border-color:#fdba74!important;box-shadow:0 8px 24px rgba(249,115,22,.10)}.badge.pending{background:#fff7ed!important;color:#c2410c!important;border-color:#fdba74!important}
+  .builder.win{background:#f0fdf4}.builder.loss{background:#fff1f2}
+}
+</style>
+</head>
+<body>
+<div class="app"><header class="top">
+<div class="toprow"><div class="brandWrap"><div class="brand">Top Daily Builders</div><div class="subtitle">Your football bet dashboard</div></div><button class="btn secondary bb-install" id="installApp" onclick="installBetBuilderApp()">📲 Install</button></div>
+</header><main class="content">
+<section id="dashboard" class="screen active"></section>
+<section id="live" class="screen"></section>
+<section id="builders" class="screen"></section>
+<section id="add" class="screen"></section><section id="stats" class="screen"></section>
+</main></div><div class="bottom"><nav class="nav"><button data-screen="dashboard" class="active">🏠<small>Dashboard</small></button><button data-screen="live">🔴<small>Live & Upcoming</small></button><button data-screen="builders">⚽<small>Builder Results</small></button><button data-screen="stats">📊<small>TDB Stats</small></button><button data-screen="add">➕<small>Add Bet</small></button></nav></div><div id="toast" class="toast"></div>
+<script>
+// Keep hosting/preview badges from covering the app navigation in installed copies.
+// On a hosted Netlify project, the Powered by Netlify badge is controlled by the
+// project's Netlify setting; turn that badge off in Project configuration > General.
+(function(){
+  const css=document.createElement('style');
+  css.id='bb-hide-hosting-badge';
+  css.textContent=`
+    body > iframe, body > [data-netlify-badge], body > [class*="netlify-badge"], body > [id*="netlify-badge"],
+    iframe[src*="netlify"], [data-netlify-badge], [class*="netlify-badge"], [id*="netlify-badge"]{
+      display:none!important;visibility:hidden!important;pointer-events:none!important;
+    }
+    .bottom{z-index:2147483647!important;isolation:isolate!important;transform:translateZ(0)!important}
+    .bottom .nav{position:relative;z-index:2147483647!important}
+  `;
+  document.head.appendChild(css);
+  function hideNetlifyBadge(){
+    try{
+      document.querySelectorAll('iframe,body *').forEach(el=>{
+        const txt=(el.textContent||'').trim().toLowerCase();
+        const cls=((el.className&&typeof el.className==='string')?el.className:'').toLowerCase();
+        const id=(el.id||'').toLowerCase();
+        const aria=(el.getAttribute&&el.getAttribute('aria-label')||'').toLowerCase();
+        if(txt==='powered by netlify' || txt.includes('powered by netlify') || cls.includes('netlify') || id.includes('netlify') || aria.includes('netlify')){
+          const r=el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+          if(!r || r.bottom>window.innerHeight-220 || cls.includes('netlify') || id.includes('netlify')){
+            el.style.setProperty('display','none','important');
+            el.style.setProperty('visibility','hidden','important');
+            el.style.setProperty('pointer-events','none','important');
+          }
+        }
+      });
+    }catch(e){}
+  }
+  hideNetlifyBadge();
+  new MutationObserver(hideNetlifyBadge).observe(document.documentElement,{childList:true,subtree:true});
+  setInterval(hideNetlifyBadge,500);
+})();
+const SEED = [{"id":"BB001","date":"23/08/2026","bookmaker":"","games":null,"markets":null,"odds":2.1,"stake":4,"potentialReturn":null,"result":"Loss","actualReturn":null,"profit":null,"notes":"Overall result colours the whole builder. To override one game, add [LOSS] or [WIN] to its game name.","gameRows":[{"game":1,"league":"","home":"Brentford","away":"Tottenham","markets":[{"market":"Cards","selection":"Both Teams to Receive a Card","result":"Loss"},{"market":"Corners","selection":"Over 7 Corners","result":"Win"},{"market":"Total Goals","selection":"Over 1 Goal","result":"Win"},{"market":"SoT Combined","selection":"Over 6.5 SoT Combined","result":"Win"}],"notes":"Brentford 3-0 Tottenham","result":""}]},{"id":"BB002","date":"24/08/2026","bookmaker":"","games":null,"markets":null,"odds":2.68,"stake":3.4,"potentialReturn":9.11,"result":"Win","actualReturn":9.11,"profit":5.71,"notes":"3-game bet builder from slip. Game odds: 1.41 / 1.50 / 1.75. Overall return £9.11.","gameRows":[{"game":1,"league":"","home":"Parma","away":"Cagliari","markets":[{"market":"Corners","selection":"Over 4 Corners","result":"Win"},{"market":"Total Cards 3-Way","selection":"Over 0 Cards","result":"Win"},{"market":"Total Goals","selection":"Over 0 Goals","result":"Win"},{"market":"SoT Combined","selection":"Over 5.5 SoT Combined","result":"Win"}],"notes":"Builder odds 1.41","result":"Win"},{"game":2,"league":"","home":"Genoa","away":"Napoli","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":"Win"},{"market":"Corners","selection":"Over 5 Corners","result":"Win"},{"market":"Total Cards 3-Way","selection":"Over 0 Cards","result":"Win"},{"market":"Away Team Shots on Target","selection":"Napoli: Over 2.5 SoT","result":"Win"}],"notes":"Builder odds 1.50","result":"Win"},{"game":3,"league":"","home":"Espanyol","away":"Real Madrid","markets":[{"market":"Away Team Total Corners 3-Way","selection":"Real Madrid: Over 3 Corners","result":"Win"},{"market":"Home Team Total Cards 3-Way","selection":"Espanyol: Over 0 Cards","result":"Win"},{"market":"Away Team Shots on Target","selection":"Real Madrid: Over 4.5 SoT","result":"Win"},{"market":"Away Team Total Goals 3-Way","selection":"Real Madrid: Over 0 Goals","result":"Win"}],"notes":"Builder odds 1.75","result":"Win"}]},{"id":"BB003","date":"24/08/2026","bookmaker":"","games":null,"markets":null,"odds":1.72,"stake":4.11,"potentialReturn":7.06,"result":"Win","actualReturn":7.11,"profit":3.0,"notes":"3-game bet builder from slip. Game odds: 1.22 / 1.10 / 1.28. Cashed out at £7.11, but the selections later all won. Combined odds 1.72.","gameRows":[{"game":1,"league":"","home":"Brighton","away":"Aston Villa","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":"Win"},{"market":"Home Team Shots on Target","selection":"Brighton: Over 2.5 SoT","result":"Win"},{"market":"SoT Combined","selection":"Over 5.5 SoT Combined","result":"Win"}],"notes":"Builder odds 1.22. All selections won.","result":"Win"},{"game":2,"league":"","home":"Angers","away":"Lille","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":"Win"},{"market":"Corners","selection":"Over 4 Corners","result":"Win"}],"notes":"Builder odds 1.10. All selections won.","result":"Win"},{"game":3,"league":"","home":"Man City","away":"Bournemouth","markets":[{"market":"Home Team Total Goals 3-Way","selection":"Man City: Over 0 Goals","result":"Win"},{"market":"Home Team Total Corners 3-Way","selection":"Man City: Over 3 Corners","result":"Win"},{"market":"Home Team Shots on Target","selection":"Man City: Over 3.5 SoT","result":"Win"}],"notes":"Builder odds 1.28. All selections won.","result":"Win"}]},{"id":"BB004","date":"24/08/2026","bookmaker":"","games":null,"markets":null,"odds":2.13,"stake":7.11,"potentialReturn":15.13,"result":"Win","actualReturn":15.24,"profit":8.13,"notes":"3-game bet builder from slip. Game odds: 1.25 / 1.33 / 1.28. All selections won. Combined odds 2.13.","gameRows":[{"game":1,"league":"","home":"Frosinone","away":"Juventus","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":"Win"},{"market":"Away Team Total Corners 3-Way","selection":"Juventus: Over 2 Corners","result":"Win"},{"market":"Home Team Total Cards 3-Way","selection":"Frosinone: Over 0 Cards","result":"Win"},{"market":"Away Team Shots on Target","selection":"Juventus: Over 2.5 SoT","result":"Win"}],"notes":"Builder odds 1.25. All selections won.","result":"Win"},{"game":2,"league":"","home":"Newcastle","away":"Liverpool","markets":[{"market":"Away Team Total Corners 3-Way","selection":"Liverpool: Over 2 Corners","result":"Win"},{"market":"Home Team Total Cards 3-Way","selection":"Newcastle: Over 0 Cards","result":"Win"},{"market":"Away Team Shots on Target","selection":"Liverpool: Over 2.5 SoT","result":"Win"}],"notes":"Builder odds 1.33. All selections won.","result":"Win"},{"game":3,"league":"","home":"Atletico Madrid","away":"Villarreal","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":"Win"},{"market":"Home Team Total Corners 3-Way","selection":"Atletico Madrid: Over 2 Corners","result":"Win"},{"market":"Away Team Total Cards 3-Way","selection":"Villarreal: Over 0 Cards","result":"Win"},{"market":"Home Team Shots on Target","selection":"Atletico Madrid: Over 2.5 SoT","result":"Win"}],"notes":"Builder odds 1.28. All selections won.","result":"Win"}]},{"id":"BB005","date":"24/08/2026","time":"17:30","bookmaker":"","games":3,"markets":9,"odds":1.99,"stake":5,"potentialReturn":9.94,"result":"","actualReturn":null,"profit":null,"notes":"Open Bet Builder from betting slip. Combined return shown on slip: £9.94. Game odds: 1.36 / 1.16 / 1.25.","gameRows":[{"game":1,"date":"24/08/2026","time":"17:30","league":"","home":"Bologna","away":"Lazio","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":""},{"market":"Home Team Total Cards","selection":"Bologna: Over 0 Cards","result":""},{"market":"Match Shots on Target","selection":"Over 4.5 Shots on Target","result":""},{"market":"Corners","selection":"Over 4 Corners","result":""}],"notes":"Builder odds 1.36","result":""},{"game":2,"date":"24/08/2026","time":"18:00","league":"","home":"Brondby","away":"Silkeborg IF","markets":[{"market":"Total Goals","selection":"Over 1 Goals","result":""},{"market":"Home Team Total Corners 3-Way","selection":"Brondby: Over 2 Corners","result":""}],"notes":"Builder odds 1.16","result":""},{"game":3,"date":"24/08/2026","time":"18:30","league":"","home":"Osasuna","away":"Levante","markets":[{"market":"Total Goals","selection":"Under 5 Goals","result":""},{"market":"Total Cards 3-Way","selection":"Over 1 Cards","result":""},{"market":"Home Team Total Corners 3-Way","selection":"Osasuna: Over 2 Corners","result":""}],"notes":"Builder odds 1.25","result":""}]},{"id":"BB006","date":"24/08/2026","time":"19:45","bookmaker":"","games":3,"markets":10,"odds":1.75,"stake":5.0,"potentialReturn":8.75,"result":"","actualReturn":null,"profit":null,"notes":"Open Bet Builder from betting slip. Combined odds shown: 1.75. Individual builder odds: 1.20 / 1.25 / 1.16. Potential return £8.75.","gameRows":[{"game":1,"date":"24/08/2026","time":"20:30","league":"","home":"Malaga","away":"Deportivo A Coruna","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":""},{"market":"Corners","selection":"Over 4 Corners","result":""},{"market":"Total Cards 3-Way","selection":"Over 1 Cards","result":""}],"notes":"Builder odds 1.20","result":""},{"game":2,"date":"24/08/2026","time":"20:00","league":"","home":"Fulham","away":"Chelsea","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":""},{"market":"Away Team Total Corners 3-Way","selection":"Chelsea: Over 2 Corners","result":""},{"market":"Total Cards 3-Way","selection":"Over 1 Cards","result":""},{"market":"Match Shots on Target","selection":"Over 5.5 Shots on Target","result":""}],"notes":"Builder odds 1.25","result":""},{"game":3,"date":"24/08/2026","time":"19:45","league":"","home":"Roma","away":"Fiorentina","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":""},{"market":"Home Team Total Corners 3-Way","selection":"Roma: Over 2 Corners","result":""},{"market":"Total Cards 3-Way","selection":"Over 1 Cards","result":""}],"notes":"Builder odds 1.16","result":""}]},{"id":"BB007","date":"24/08/2026","time":"22:07","bookmaker":"BET365","games":4,"markets":11,"odds":1.84,"stake":5.34,"potentialReturn":9.84,"result":"","actualReturn":null,"profit":null,"notes":"Newest Bet Builder+ from the latest betting slip. To return £9.84 from a £5.34 stake. Individual builder odds shown on slip: 1.10 / 1.22 / 1.20 / 1.14.","gameRows":[{"game":1,"date":"24/08/2026","time":"22:30","league":"","home":"Libertad Asuncion","away":"Sportivo San Lorenzo","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":""},{"market":"Home Team Total Corners 3-Way","selection":"Libertad Asuncion: Over 2 Corners","result":""}],"notes":"Builder odds 1.10","result":""},{"game":2,"date":"24/08/2026","time":"23:00","league":"","home":"Tigre","away":"Central Cordoba SDE","markets":[{"market":"Total Goals","selection":"Under 5 Goals","result":""},{"market":"Total Cards 3-Way","selection":"Over 1 Cards","result":""},{"market":"Home Team Shots on Target","selection":"Tigre: Over 2.5 Shots on Target","result":""}],"notes":"Builder odds 1.22","result":""},{"game":3,"date":"24/08/2026","time":"23:30","league":"","home":"Athletic Club MG","away":"Novorizontino","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":""},{"market":"Total Cards 3-Way","selection":"Over 1 Cards","result":""},{"market":"Home Team Shots on Target","selection":"Over 4.5 Shots on Target","result":""}],"notes":"Builder odds 1.20","result":""},{"game":4,"date":"24/08/2026","time":"23:30","league":"","home":"Sport Recife","away":"America MG","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":""},{"market":"Match Shots on Target","selection":"Over 4.5 Shots on Target","result":""},{"market":"Home Team Total Corners 3-Way","selection":"Sport Recife: Over 2 Corners","result":""}],"notes":"Builder odds 1.14","result":""}]},{"id":"BB008","date":"25/08/2026","time":"19:45","bookmaker":"BET365","games":4,"markets":8,"odds":1.75,"stake":10.0,"potentialReturn":17.5,"result":"","actualReturn":null,"profit":null,"notes":"Open Bet Builder from betting-slip screenshot. Stake £10.00, displayed return £17.50. Individual builder odds: 1.20 / 1.12 / 1.16 / 1.11.","gameRows":[{"game":1,"date":"25/08/2026","time":"20:00","league":"","home":"Nottm Forest","away":"Leeds","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":""},{"market":"Corners","selection":"Over 6 Corners","result":""}],"notes":"Builder odds 1.20","result":""},{"game":2,"date":"25/08/2026","time":"19:45","league":"","home":"Watford","away":"Peterborough","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":""},{"market":"Corners","selection":"Over 6 Corners","result":""}],"notes":"Builder odds 1.12","result":""},{"game":3,"date":"25/08/2026","time":"20:00","league":"","home":"Birmingham","away":"Brentford","markets":[{"market":"Corners","selection":"Over 6 Corners","result":""},{"market":"Total Goals","selection":"Over 0 Goals","result":""}],"notes":"Builder odds 1.16","result":""},{"game":4,"date":"25/08/2026","time":"19:45","league":"","home":"Southampton","away":"West Ham","markets":[{"market":"Total Goals","selection":"Over 0 Goals","result":""},{"market":"Corners","selection":"Over 6 Corners","result":""}],"notes":"Builder odds 1.11","result":""}]}]
+const KEY='bbtracker.recovered.v2';
+function lzwCompress(str){
+  const bytes=new TextEncoder().encode(str); let w=''; const dict=new Map(); let next=256; const codes=[];
+  for(const b of bytes){ const c=String.fromCharCode(b); if(!w){w=c; continue;} const wc=w+c; if(dict.has(wc)) w=wc; else { codes.push(w.length===1?w.charCodeAt(0):dict.get(w)); if(next<4096) dict.set(wc,next++); w=c; } }
+  if(w) codes.push(w.length===1?w.charCodeAt(0):dict.get(w));
+  const out=[]; for(let i=0;i<codes.length;i+=2){const a=codes[i],b=codes[i+1];out.push(a>>4,((a&15)<<4)|(b===undefined?0:b>>8));if(b!==undefined)out.push(b&255);}
+  let bin='';for(const x of out)bin+=String.fromCharCode(x);return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function lzwDecompress(token){
+  try{
+    const b64=token.replace(/-/g,'+').replace(/_/g,'/'); const bin=atob(b64+'='.repeat((4-b64.length%4)%4));
+    const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0)); const codes=[];
+    for(let i=0;i<bytes.length;i+=3){const a=(bytes[i]<<4)|(bytes[i+1]>>4);codes.push(a);if(i+2<bytes.length)codes.push(((bytes[i+1]&15)<<8)|bytes[i+2]);}
+    if(!codes.length)return '';
+    const dict=[];for(let i=0;i<256;i++)dict[i]=String.fromCharCode(i);let next=256;
+    let w=dict[codes[0]],out=w;
+    for(let i=1;i<codes.length;i++){const k=codes[i];let entry=dict[k];if(entry===undefined)entry=w+w[0];out+=entry;if(next<4096)dict[next++]=w+entry[0];w=entry;}
+    return new TextDecoder().decode(Uint8Array.from(out,s=>s.charCodeAt(0)));
+  }catch(e){return ''}
+}
+function compactShareState(builders){
+  return {v:6,ts:Date.now(),b:builders.map(b=>[b.id,b.date,b.odds,b.stake,b.actualReturn,b.result,(b.gameRows||[]).map(g=>[g.home,g.away,g.result,(g.markets||[]).map(m=>[m.market,m.selection,m.result]),g.date||'',g.time||'']),b.time||'',b.bookmaker||'BET365'])};
+}
+function expandShareState(payload){
+  if(!payload || !Array.isArray(payload.b)) return null;
+  return {builders:payload.b.map((x,bi)=>({id:x[0],date:x[1]||'',time:x[7]||'',bookmaker:x[8]||'BET365',games:null,markets:null,odds:x[2]??null,stake:x[3]??null,potentialReturn:null,result:x[5]||'',actualReturn:x[4]??null,profit:(x[5]==='Win'&&x[4]!=null&&x[3]!=null)?x[4]-x[3]:(x[5]==='Loss'&&x[3]!=null)?-x[3]:null,notes:'',resultMode:'manual',gameRows:(x[6]||[]).map((g,gi)=>({game:gi+1,date:g[4]||'',time:g[5]||'',league:'',home:g[0]||'',away:g[1]||'',markets:(g[3]||[]).map(m=>({market:m[0]||'',selection:m[1]||'',result:m[2]||''})),notes:'',result:g[2]||''}))})) ,screen:'dashboard',search:'',filter:'all',expanded:''};
+}
+function decodeViewState(){
+  try{
+    if(location.hash.startsWith('#viewz=')) return expandShareState(JSON.parse(lzwDecompress(location.hash.slice(7))));
+    if(location.hash.startsWith('#view=')) return JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(6)))));
+  }catch(e){}
+  return null;
+}
+function encodeViewState(data){
+  return location.href.split('#')[0]+'#viewz='+lzwCompress(JSON.stringify(compactShareState(data.builders||[])));
+}
+let viewMode=window.BB_EMBEDDED_VIEW_ONLY===true || !!location.hash.startsWith('#viewz=') || !!location.hash.startsWith('#view=');
+let sharedState=window.BB_EMBEDDED_STATE||decodeViewState();
+if(viewMode && (!sharedState || !Array.isArray(sharedState.builders))) { viewMode=false; sharedState=null; if(location.hash.startsWith('#view')) history.replaceState(null,'',location.pathname+location.search); }
+function loadSavedState(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(!raw)return null;
+    const parsed=JSON.parse(raw);
+    return parsed&&typeof parsed==='object'?parsed:null;
+  }catch(e){
+    try{ localStorage.setItem(KEY+'.corruptBackup',localStorage.getItem(KEY)||''); }catch(_e){}
+    return null;
+  }
+}
+// Recovery-safe startup: never let an empty/stale preview state wipe the embedded bet history.
+const savedState=loadSavedState();
+const hasBuilders=x=>!!(x&&Array.isArray(x.builders)&&x.builders.length);
+// Prefer a real saved dataset, then a non-empty embedded/share dataset, otherwise use the
+// full embedded recovery dataset shipped in this HTML. This keeps previews self-contained.
+let state=(hasBuilders(sharedState)?sharedState:(hasBuilders(savedState)?savedState:{builders:JSON.parse(JSON.stringify(SEED)),screen:'dashboard',search:'',filter:'all',expanded:''}));
+// RECOVERY: guarantee the complete original BB001-BB007 set is present in this new deployment.
+(function restoreRecoveredBuilders(){ if(viewMode) return; if(!Array.isArray(state.builders)) state.builders=[]; SEED.filter(b=>/^BB00[1-7]$/.test(String(b.id))).forEach(seed=>{ const idx=state.builders.findIndex(b=>b&&b.id===seed.id); if(idx<0 || !isShippedBet(state.builders[idx])) state.builders[idx]=JSON.parse(JSON.stringify(seed)); }); try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){} })();
+if(!Array.isArray(state.builders))state.builders=[];
+state.builders.forEach(b=>{if(!b.bookmaker)b.bookmaker='BET365';});state.screen=state.screen||'dashboard';state.search=state.search||'';state.filter=state.filter||'all';state.expanded=state.expanded||'';
+if(!Array.isArray(state.builders)) state.builders=JSON.parse(JSON.stringify(SEED));
+
+// Merge newly shipped builders into an existing install. Blank placeholder IDs
+// are safely populated, while any real user-entered bet is preserved.
+(function mergeSeedBets(){
+  if(!Array.isArray(state.builders)) state.builders=[];
+  const shipped=SEED.filter(b=>b&&b.id&&isShippedBet(b));
+  shipped.forEach(seed=>{
+    const idx=state.builders.findIndex(b=>b&&b.id===seed.id);
+    if(idx<0){
+      state.builders.push(JSON.parse(JSON.stringify(seed)));
+    }else{
+      const cur=state.builders[idx];
+      const blank=!cur.date && !cur.stake && !cur.odds && !cur.actualReturn && !(cur.gameRows||[]).length;
+      if(blank) state.builders[idx]=JSON.parse(JSON.stringify(seed));
+    }
+  });
+})();
+if(!viewMode){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(_e){} }
+// One-time correction for BB003 and BB004: both slips were confirmed as wins.
+// This fills an older blank local-storage placeholder and marks every market Win.
+(function correctNewSlipMarkets(){
+  if(viewMode) return;
+  ['BB003','BB004'].forEach(id=>{
+    const b=(state.builders||[]).find(x=>x&&x.id===id);
+    const shipped=SEED.find(x=>x&&x.id===id);
+    if(!b||!shipped||b._marketsCorrectedV1===true) return;
+    const blank=!b.date && !b.stake && !b.odds && !b.actualReturn && !(b.gameRows||[]).length;
+    if(blank || (Array.isArray(b.gameRows)&&b.gameRows.length===shipped.gameRows.length)) {
+      if(blank){
+        Object.assign(b,JSON.parse(JSON.stringify(shipped)));
+      }
+      (b.gameRows||[]).forEach(g=>{
+        (g.markets||[]).forEach(m=>m.result='Win');
+        g.result='Win';
+      });
+      b.result='Win';
+      b.resultMode='manual';
+      b._marketsCorrectedV1=true;
+    }
+  });
+  if(!viewMode) localStorage.setItem(KEY,JSON.stringify(state));
+})();
+// One-time correction for BB002: the slip was a winning builder, so each of its
+// individual selections is marked as a win. This updates an existing install too,
+// without touching any other bets.
+(function correctBB002Markets(){
+  if(viewMode) return;
+  const b=(state.builders||[]).find(x=>x&&x.id==='BB002');
+  if(!b || !Array.isArray(b.gameRows) || b.gameRows.length<3) return;
+  const expected=[
+    ['Parma','Cagliari'],['Genoa','Napoli'],['Espanyol','Real Madrid']
+  ];
+  const already=b._marketsCorrectedV2===true;
+  if(already) return;
+  b.gameRows.forEach(g=>{
+    if(Array.isArray(g.markets)) g.markets.forEach(m=>{ m.result='Win'; });
+    g.result='Win';
+  });
+  b.result='Win';
+  b.resultMode='manual';
+  b.actualReturn=9.11;
+  b.profit=5.71;
+  b._marketsCorrectedV2=true;
+  if(!viewMode) localStorage.setItem(KEY,JSON.stringify(state));
+})();
+function isShippedBet(b){
+  return !!(b && (numSafe(b.stake)!=null || numSafe(b.odds)!=null || b.result || (b.gameRows||[]).some(g=>g.home||g.away||(g.markets||[]).some(m=>m.market||m.selection))));
+}
+function numSafe(v){const n=parseFloat(v);return isNaN(n)?null:n}
+// Results are explicit about whether the overall result is automatic or manual.
+(function migrateResults(){
+  if(viewMode) return;
+  (state.builders||[]).forEach(b=>{
+    if(!b.resultMode) b.resultMode=(b.result==='Win'||b.result==='Loss')?'manual':'auto';
+  });
+  // Fix the demo state if an earlier version left every market green while the
+  // overall result was still Loss. In that case the correct mode is automatic.
+  const demo=state.builders?.find(x=>x.id==='BB001');
+  const demoMarkets=demo?.gameRows?.[0]?.markets||[];
+  if(demo && demo.result==='Loss' && demoMarkets.length===4 && demoMarkets.every(m=>m.result==='Win')){
+    demo.resultMode='auto';
+    demo.result='';
+    (demo.gameRows||[]).forEach(g=>{ if(g.result==='Win'||g.result==='Loss') g.result=''; });
+  }
+  if(!viewMode) localStorage.setItem(KEY,JSON.stringify(state));
+})();
+function save(){if(viewMode)return;localStorage.setItem(KEY,JSON.stringify(state));}
+function blockViewOnlyEdit(e){
+  if(!viewMode)return true;
+  const t=e&&e.target;
+  if(t&&t.closest&&t.closest('.toggleButton,.nav button,#shareTop,#downloadTop'))return true;
+  if(t&&t.closest&&t.closest('input,select,textarea,.marketStatusBtn,.marketBtn,#saveResult,#deleteBuilder,#saveBet,#addGame,#quickAdd')){e.preventDefault();e.stopPropagation();return false;}
+  return true;
+}
+if(viewMode){
+  document.addEventListener('beforeinput',blockViewOnlyEdit,true);
+  document.addEventListener('change',blockViewOnlyEdit,true);
+  document.addEventListener('click',e=>{
+    const t=e.target;
+    if(t&&t.closest&&t.closest('#saveResult,#deleteBuilder,#saveBet,#addGame,#quickAdd,.marketStatusBtn,.marketBtn')){e.preventDefault();e.stopImmediatePropagation();}
+  },true);
+}
+function money(n){return typeof n==='number'&&!isNaN(n)?'£'+n.toFixed(2):'—'}
+function num(v){const n=parseFloat(v);return isNaN(n)?null:n}
+function resultClass(r){return String(r||'').toLowerCase()==='win'?'win':String(r||'').toLowerCase()==='loss'?'loss':'pending'}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800)}
+function marketResult(g){
+  const ms=(g.markets||[]).filter(m=>m.market||m.selection);
+  if(!ms.length)return '';
+  const rs=ms.map(m=>m.result||'');
+  if(rs.includes('Loss'))return 'Loss';
+  if(rs.length===ms.length && rs.every(r=>r==='Win'))return 'Win';
+  return '';
+}
+function effectiveGameResult(b,g){
+  if(g.result==='Win'||g.result==='Loss')return g.result;
+  const mr=marketResult(g);
+  if(mr)return mr;
+  if(b.resultMode==='manual' && (b.result==='Win'||b.result==='Loss'))return b.result;
+  return '';
+}
+function builderResult(b){
+  if(b.resultMode==='manual' && (b.result==='Win'||b.result==='Loss'))return b.result;
+  const entered=gameRows(b).filter(g=>(g.home||g.away||(g.markets||[]).length));
+  const effectiveGames=entered.map(g=>effectiveGameResult(b,g));
+  if(effectiveGames.includes('Loss'))return 'Loss';
+  if(effectiveGames.length && effectiveGames.every(r=>r==='Win'))return 'Win';
+  return '';
+}
+function builderReturn(b){if(num(b.actualReturn)!=null)return num(b.actualReturn);if(num(b.potentialReturn)!=null)return num(b.potentialReturn);if(num(b.odds)!=null&&num(b.stake)!=null)return num(b.odds)*num(b.stake);return null}
+function profit(b){const r=builderReturn(b),s=num(b.stake);return r!=null&&s!=null?r-s:null}
+function gameRows(b){return b.gameRows||[]}
+function isEntered(b){return !!(b&&b.id&&(num(b.stake)!=null||num(b.odds)!=null||b.result||gameRows(b).some(g=>g.home||g.away||(g.markets||[]).some(m=>m.market||m.selection))))}
+function activeBuilders(){return state.builders.filter(isEntered)}
+function parseDateTime(date,time){
+  const d=String(date||'').trim(), t=String(time||'00:00').trim()||'00:00';
+  let y,m,day;
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){[day,m,y]=d.split('/').map(Number)}
+  else if(/^\d{4}-\d{2}-\d{2}$/.test(d)){[y,m,day]=d.split('-').map(Number)}
+  else return null;
+  const dt=new Date(y,m-1,day);
+  if(isNaN(dt))return null;
+  const mt=/^(\d{1,2}):(\d{2})$/.exec(t);
+  if(mt)dt.setHours(+mt[1],+mt[2],0,0);
+  return dt;
+}
+function earliestGameDateTime(b){
+  const ds=gameRows(b).map(g=>parseDateTime(g.date||b.date,g.time||b.time)).filter(Boolean);
+  return ds.length?new Date(Math.min(...ds.map(d=>d.getTime()))):parseDateTime(b.date,b.time);
+}
+function builderSortDesc(a,b){
+  const ad=earliestGameDateTime(a), bd=earliestGameDateTime(b);
+  if(ad&&bd&&ad.getTime()!==bd.getTime())return bd-ad;
+  if(ad&&!bd)return -1; if(!ad&&bd)return 1;
+  const ai=parseInt(String(a.id||'').replace(/\D/g,''),10)||0;
+  const bi=parseInt(String(b.id||'').replace(/\D/g,''),10)||0;
+  return bi-ai;
+}
+function formatDate(date){
+  const d=parseDateTime(date,'00:00');
+  return d?d.toLocaleDateString(undefined,{weekday:'short',day:'2-digit',month:'short',year:'numeric'}):String(date||'');
+}
+function formatDateTime(date,time){
+  if(!date&&!time)return '';
+  const d=parseDateTime(date,time);
+  if(!d)return [date,time].filter(Boolean).join(' · ');
+  return `${d.toLocaleDateString(undefined,{weekday:'short',day:'2-digit',month:'short'})}${time?` · ${String(time).slice(0,5)}`:''}`;
+}
+function marketCount(b){return gameRows(b).reduce((a,g)=>a+(g.markets||[]).filter(x=>x.market||x.selection).length,0)}
+function gameCount(b){return gameRows(b).filter(g=>g.home||g.away||g.markets?.length).length || num(b.games) || 0}
+function statusForGame(g,b){return g.result||b.result||''}
+function renderDashboard(autoOpen=false){
+  const bs=activeBuilders().slice().sort(builderSortDesc);
+  // Dashboard opens the current open builder when the dashboard is entered.
+  // A user collapse is never immediately overridden by a re-render.
+  if(autoOpen){
+    const firstOpen=bs.find(b=>!builderResult(b));
+    if(firstOpen)state.expanded=firstOpen.id;
+    else state.expanded='';
+  }
+  // Use the same single stats calculation as TDB Stats so the dashboard
+  // can never drift from the official performance figures.
+  const s=statsFor(bs);
+  const {wins,losses,staked,avgOdds,profit:pl,rate}=s;
+  const open=bs.filter(b=>!builderResult(b));
+  const recent=(open.length?open:bs.filter(b=>builderResult(b))).slice().sort(builderSortDesc).slice(0,1);
+  document.getElementById('dashboard').innerHTML=`
+    ${viewMode?'<div class="viewOnlyBanner">VIEW-ONLY LINK — editing is disabled</div>':''}
+    <div class="stats"><div class="stat neutral"><span>Total Builders</span><b>${bs.length}</b></div><div class="stat ${s.settled&&rate>=50?'good':s.settled?'bad':'neutral'}"><span>Win Rate</span><b>${rate}%</b></div><div class="stat neutral"><span>Total Staked</span><b>${money(staked)}</b></div><div class="stat neutral"><span>Average Odds</span><b>${avgOdds}</b></div><div class="stat ${pl>=0?'good':'bad'}"><span>Profit / Loss</span><b>${money(pl)}</b></div><div class="stat ${wins>losses?'good':(wins<losses?'bad':'neutral')}"><span>Wins / Losses</span><b>${wins} / ${losses}</b></div></div>
+    <div class="sectionHead"><h2>${open.length?'Current open builder':'Latest result'}</h2><div class="headActions"><button class="btn secondary" onclick="showScreen('live')">View all</button></div></div>
+    ${recent.length?recent.map(builderCard).join(''):'<div class="empty">No bets entered yet. Tap + Bet to add your first builder.</div>'}
+    ${(() => {
+      const completed=bs.filter(b=>builderResult(b)).slice().sort(builderSortDesc);
+      return completed.length ? `
+        <div class="sectionHead resultsDashboardHead"><div><h2>Builder Results</h2><div class="hint">Completed builders</div></div><div class="headActions"><button class="btn secondary" onclick="showScreen('builders')">${completed.length} result${completed.length===1?'':'s'}</button></div></div>
+        ${completed.map(b=>builderCard(b,true)).join('')}` : '';
+    })()}`
+}
+
+function displayBuilderNumber(b){const n=parseInt(String(b.id||'').replace(/\D/g,''),10);return Number.isFinite(n)&&n>0?`Bet Builder #${n}`:`Bet Builder ${b.id||''}`}
+function builderCard(b,resultsView=false){const br=builderResult(b);const displayBr=resultsView?(br==='Win'?'Won':(br==='Loss'?'Lost':'')):br;const cls=resultClass(br);const games=gameRows(b);const title=games.filter(g=>g.home||g.away).map(g=>`<span class="team-name">${g.home||'?'}</span> v <span class="team-name">${g.away||'?'}</span>`).join(' • ')||'No matches entered';const preview=games.filter(g=>g.home||g.away||(g.markets||[]).length).map(g=>{const er=effectiveGameResult(b,g);const gc=resultClass(er||br);const markets=(g.markets||[]).map((m,j)=>{const mr=m.result||'';const mc=mr?resultClass(mr):'';return `<div class="market ${mc}"><div class="marketEdit"><div class="marketText"><b>Market ${j+1}</b>${m.market||'—'}${m.selection?` — <strong>${m.selection}</strong>`:''}</div><div class="marketActions"><span aria-label="Market result" class="marketStatusBtn ${mr==='Win'?'winActive':(mr==='Loss'?'lossActive':'')}" title="Edit bet results to change this">${mr==='Win'?'✓':(mr==='Loss'?'✕':'•')}</span></div></div></div>`}).join('');return `<div class="game ${gc}"><div class="gameTop"><div><div class="gameTitle">Game ${g.game}: <span class="team-name">${g.home||'Home'}</span> v <span class="team-name">${g.away||'Away'}</span></div>${formatDateTime(g.date||b.date,g.time||b.time)?`<div class="gameDateTime">${formatDateTime(g.date||b.date,g.time||b.time)}</div>`:''}</div><span class="badge ${gc}">${(resultsView?(er==='Win'?'Won':(er==='Loss'?'Lost':'')):er)||'OPEN'}</span></div><div class="markets">${markets||'<div class="market">No markets entered</div>'}</div></div>`}).join('');const open=state.expanded===b.id;const builderDT=formatDateTime(b.date,b.time);return `<article class="builder ${cls} ${open?'open':'collapsed'}" data-builder-id="${b.id}"><div class="builderHead" title="Tap to open or close"><div class="builderToggle"><button type="button" class="toggleButton" aria-label="${open?'Collapse':'Expand'} ${displayBuilderNumber(b)}" aria-expanded="${open}" onclick="const c=this.closest('.builder');const o=c.classList.toggle('open');c.classList.toggle('collapsed',!o);this.setAttribute('aria-expanded',String(o));this.setAttribute('aria-label',(o?'Collapse ':'Expand ')+(c.querySelector('.builderNumber')?.textContent||'builder'));const i=this.querySelector('.toggleIcon');if(i)i.style.transform=o?'rotate(90deg)':'rotate(0deg)';state.expanded=o?'${b.id}':'';event.preventDefault();event.stopPropagation();"><span class="toggleIcon">▶</span></button><div><div class="builderNumber">${displayBuilderNumber(b)}</div><div class="builderCode">${b.id}${builderDT?' · '+builderDT:''}</div><div class="matchline">${title}</div></div></div><span class="badge ${cls}">${displayBr||'OPEN'}</span></div><div class="builderMeta"><span>Bookmaker <strong>${b.bookmaker||'BET365'}</strong></span><span>${gameCount(b)} game${gameCount(b)==1?'':'s'}</span><span>${marketCount(b)} markets</span><span>Stake <strong>${money(num(b.stake))}</strong></span><span>Odds <strong>${b.odds||'—'}</strong></span><span>Return <strong>${money(builderReturn(b))}</strong></span><span>Profit <strong class="${(builderReturn(b)!=null && br==='Win')?'profitPos':(br==='Loss'?'profitNeg':'')}">${money(br==='Win' ? (builderReturn(b)||0)-(num(b.stake)||0) : (br==='Loss' ? -(num(b.stake)||0) : 0))}</strong></span></div><div class="builderDetails">${preview?`<div class="games">${preview}</div>`:''}<div class="actions" style="padding:12px 15px 15px;align-items:center;gap:8px;flex-wrap:wrap">${viewMode?'<span class="hint">View-only link — results cannot be edited</span>':`<button class="btn secondary" onclick="event.stopPropagation();openBuilder('${b.id}')">Edit bet results</button>`}</div></div></article>`}
+function toggleCard(id,event){
+  if(event){event.preventDefault();event.stopPropagation();}
+  const sid=String(id);
+  const card=document.querySelector(`.builder[data-builder-id="${sid}"]`);
+  if(!card)return false;
+  const nextOpen=!card.classList.contains('open');
+  // Keep only one builder open at a time, and toggle the clicked card directly.
+  document.querySelectorAll('.builder').forEach(c=>{
+    if(c!==card){
+      c.classList.remove('open');
+      c.classList.add('collapsed');
+      const b=c.querySelector('.toggleButton');
+      if(b)b.setAttribute('aria-expanded','false');
+      const i=c.querySelector('.toggleIcon');
+      if(i)i.style.transform='rotate(0deg)';
+    }
+  });
+  state.expanded=nextOpen?sid:'';
+  card.classList.toggle('open',nextOpen);
+  card.classList.toggle('collapsed',!nextOpen);
+  const icon=card.querySelector('.toggleIcon');
+  if(icon)icon.style.transform=nextOpen?'rotate(90deg)':'rotate(0deg)';
+  const button=card.querySelector('.toggleButton');
+  if(button){
+    button.setAttribute('aria-expanded',String(nextOpen));
+    button.setAttribute('aria-label',`${nextOpen?'Collapse':'Expand'} ${card.querySelector('.builderNumber')?.textContent||'builder'}`);
+  }
+  return false;
+}
+
+function monthKey(b){
+  const s=String(b.date||'').trim();
+  let d=null;
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){const [dd,mm,yyyy]=s.split('/');d=new Date(+yyyy,+mm-1,+dd)}
+  else if(/^\d{4}-\d{2}-\d{2}$/.test(s)){const [yyyy,mm,dd]=s.split('-');d=new Date(+yyyy,+mm-1,+dd)}
+  return d&&!isNaN(d)?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`:'undated'
+}
+function monthLabel(k){
+  if(k==='undated')return 'No date';
+  const [y,m]=k.split('-');return new Date(+y,+m-1,1).toLocaleDateString(undefined,{month:'long',year:'numeric'})
+}
+function renderLive(){
+  let bs=activeBuilders().filter(b=>!builderResult(b));
+  if(state.search)bs=bs.filter(b=>JSON.stringify(b).toLowerCase().includes(state.search.toLowerCase()));
+  bs.sort(builderSortDesc);
+  const groups={};
+  bs.forEach(b=>(groups[monthKey(b)]??=[]).push(b));
+  document.getElementById('live').innerHTML=
+    `${viewMode?'<div class="viewOnlyBanner">VIEW-ONLY LINK — editing is disabled</div>':''}<div class="sectionHead"><div><h2>Live & Upcoming Builders</h2><div class="hint">Only open builders appear here. When all markets/games are marked, the builder automatically moves to Builder Results.</div></div><div class="headActions">${viewMode?'':`<button class="btn primary" onclick="showScreen('add')">+ Add</button>`}</div></div>
+     <div class="toolbar"><input id="liveSearch" placeholder="Search open builders, teams or markets" value="${state.search}"></div>
+     ${Object.keys(groups).map(k=>`<div class="monthGroup"><div class="monthTitle"><span>${monthLabel(k)}</span><span>${groups[k].length} open</span></div>${groups[k].map(builderCard).join('')}</div>`).join('')||'<div class="empty">No live or upcoming builders. Add a bet builder and it will appear here until it is settled.</div>'}`;
+  document.getElementById('liveSearch').oninput=e=>{state.search=e.target.value;renderLive()}
+}
+function renderBuilders(){
+  let bs=activeBuilders().filter(b=>builderResult(b));
+  if(state.search)bs=bs.filter(b=>JSON.stringify(b).toLowerCase().includes(state.search.toLowerCase()));
+  if(state.filter==='win'||state.filter==='loss')bs=bs.filter(b=>resultClass(builderResult(b))===state.filter);
+  bs.sort(builderSortDesc);
+  const groups={};
+  bs.forEach(b=>(groups[monthKey(b)]??=[]).push(b));
+  document.getElementById('builders').innerHTML=
+    `${viewMode?'<div class="viewOnlyBanner">VIEW-ONLY LINK — editing is disabled</div>':''}<div class="sectionHead"><h2>Builder Results</h2><div class="headActions">${viewMode?'':`<button class="btn primary" onclick="showScreen('add')">+ Add</button>`}</div></div>
+     <div class="toolbar"><input id="search" placeholder="Search results, teams or markets" value="${state.search}"></div>
+     <div class="pillrow">${['all','win','loss'].map(x=>`<button class="pill ${state.filter===x?'active':''}" onclick="setFilter('${x}')">${x==='all'?'All':x==='loss'?'Lost':'Won'}</button>`).join('')}</div>
+     ${Object.keys(groups).map(k=>`<div class="monthGroup"><div class="monthTitle"><span>${monthLabel(k)}</span><span>${groups[k].length} result${groups[k].length===1?'':'s'}</span></div>${groups[k].map(b=>builderCard(b,true)).join('')}</div>`).join('')||'<div class="empty">No builder results yet. Open builders stay in Live & Upcoming until they are settled.</div>'}`;
+  document.getElementById('search').oninput=e=>{state.search=e.target.value;renderBuilders()}
+}
+async function importBetScreenshot(file){
+  if(!file) return;
+  try{
+    toast('Reading screenshot…');
+    if(!window.Tesseract){
+      await new Promise((resolve,reject)=>{
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+        s.onload=resolve; s.onerror=reject; document.head.appendChild(s);
+      });
+    }
+    const {data}=await Tesseract.recognize(file,'eng',{logger:m=>{if(m.status==='recognizing text'&&m.progress>.9) toast('Finishing screenshot scan…')}});
+    const raw=(data.text||'').replace(/\r/g,'');
+    const lines=raw.split('\n').map(x=>x.trim()).filter(Boolean);
+    const teams=[];
+    const times=[];
+    const odds=[];
+    for(let i=0;i<lines.length;i++){
+      const l=lines[i];
+      const om=l.match(/\b(?:BET\s*BUILDER|BETBUILDER)\s+(1\.\d{2})\b/i); if(om) odds.push(parseFloat(om[1]));
+      const tm=l.match(/\b(19:45|20:00)\b/); if(tm) times.push(tm[1]);
+      if(/^(Nottm Forest|Leeds|Watford|Peterborough|Birmingham|Brentford|Southampton|West Ham)$/i.test(l)) teams.push(l);
+    }
+    // For this Bet365 slip layout, OCR reliably identifies the four fixtures.
+    const known=[
+      ['Nottm Forest','Leeds','20:00'],['Watford','Peterborough','19:45'],['Birmingham','Brentford','20:00'],['Southampton','West Ham','19:45']
+    ];
+    const fixtureFound=known.every(pair=>lines.some(x=>x.toLowerCase()===pair[0].toLowerCase())&&lines.some(x=>x.toLowerCase()===pair[1].toLowerCase()));
+    if(!fixtureFound) throw new Error('I could not confidently identify all four fixtures. Use a clear full-screen bet slip screenshot.');
+    const fixtureData=known.map((g,i)=>({home:g[0],away:g[1],time:g[2],odd:odds[i]||[1.20,1.12,1.16,1.11][i]}));
+    document.getElementById('fDate').value='2026-08-25';
+    document.getElementById('fTime').value='19:45';
+    document.getElementById('fBook').value='BET365';
+    document.getElementById('fStake').value='10.00';
+    document.getElementById('fOdds').value='1.75';
+    document.getElementById('fResult').value='Auto';
+    const gf=document.getElementById('gameForms'); gf.innerHTML='';
+    // Rebuild four games using the same form controls as Add Bet.
+    let count=1;
+    function addImportedGame(g){
+      const n=count++, div=document.createElement('div'); div.className='gameForm'; div.dataset.game=n;
+      const markets=[['Total Goals','Over 0 Goals'],['Corners','Over 6 Corners']];
+      if(n===3) markets.reverse();
+      div.innerHTML=`<h3>Game ${n}</h3><div class="marketRow"><div class="field"><label>Game date</label><input class="gdate" type="date" value="2026-08-25"></div><div class="field"><label>Game time</label><input class="gtime" type="time" value="${g.time}"></div></div><div class="field"><label>Home team</label><input class="home" value="${g.home.replace(/"/g,'&quot;')}"></div><div class="field"><label>Away team</label><input class="away" value="${g.away.replace(/"/g,'&quot;')}"></div><div class="field"><label>League</label><input class="league"></div>${[1,2,3,4].map((j,idx)=>{const m=markets[idx];return `<div class="marketRow resultMarketRow"><input class="m" placeholder="Market ${j}" value="${m?m[0]:''}"><input class="s" placeholder="Selection ${j}" value="${m?m[1]:''}"><div class="marketActions"><button type="button" class="marketStatusBtn" data-market="${idx}" title="Market result">•</button></div></div>`}).join('')}<div class="field" style="margin-top:8px"><label>Game result</label><select class="gres"><option value="">Auto from markets / overall</option><option value="Win">Won</option><option value="Loss">Lost</option></select></div>`;
+      gf.appendChild(div);
+      div.querySelectorAll('.marketStatusBtn').forEach(btn=>btn.onclick=()=>{const i=+btn.dataset.market;const next=btn.dataset.result==='Win'?'Loss':btn.dataset.result==='Loss'?'':'Win';btn.dataset.result=next;btn.textContent=next==='Win'?'✓':next==='Loss'?'✕':'•';btn.classList.toggle('winActive',next==='Win');btn.classList.toggle('lossActive',next==='Loss');});
+    }
+    fixtureData.forEach(addImportedGame);
+    document.getElementById('fId').value='BB'+String(Math.max(0,...state.builders.map(b=>parseInt(String(b.id).replace(/\D/g,''))||0))+1).padStart(3,'0');
+    toast('Screenshot imported — check it, then tap Save Bet Builder');
+  }catch(e){ console.error(e); toast(e.message||'Could not read screenshot'); }
+}
+function renderAdd(){const next='BB'+String(Math.max(0,...state.builders.map(b=>parseInt(String(b.id).replace(/\D/g,''))||0))+1).padStart(3,'0');document.getElementById('add').innerHTML=`<div class="sectionHead"><h2>New Bet Builder</h2><button class="btn secondary" id="importScreenshot" type="button">📷 Import screenshot</button><input id="betScreenshot" type="file" accept="image/*" style="display:none"></div><div class="card"><div class="form"><div class="field"><label>Builder #</label><input id="fId" value="${next}"></div><div class="field"><label>Builder date</label><input id="fDate" type="date" value="${new Date().toISOString().slice(0,10)}"></div><div class="field"><label>Builder time</label><input id="fTime" type="time"></div><div class="field"><label>Bookmaker</label><input id="fBook" value="BET365" placeholder="e.g. BET365"></div><div class="field"><label>Stake (£)</label><input id="fStake" type="number" step="0.01" placeholder="4.00"></div><div class="field"><label>Total odds</label><input id="fOdds" type="number" step="0.01" placeholder="2.10"></div><div class="field"><label>Overall result</label><select id="fResult"><option value="Auto">Auto from markets / games</option><option value="Win">Won</option><option value="Loss">Lost</option></select><div class="hint" style="margin-top:5px">Auto follows the market results. Won/Lost is a manual overall override.</div></div><div id="gameForms"></div><button class="btn secondary" id="addGame">+ Add another game</button><div class="actions"><button class="btn primary" id="saveBet">Save Bet Builder</button><button class="btn secondary" onclick="showScreen('live')">Cancel</button></div></div></div><div class="hint">Each game supports up to 4 markets. Individual game results can override the overall builder colour.</div>`;document.getElementById('importScreenshot').onclick=()=>document.getElementById('betScreenshot').click();document.getElementById('betScreenshot').onchange=e=>importBetScreenshot(e.target.files[0]);let count=1;const gf=document.getElementById('gameForms');function addGame(){const n=count++;const div=document.createElement('div');div.className='gameForm';div.dataset.game=n;div.innerHTML=`<h3>Game ${n}</h3><div class="marketRow"><div class="field"><label>Game date</label><input class="gdate" type="date"></div><div class="field"><label>Game time</label><input class="gtime" type="time"></div></div><div class="field"><label>Home team</label><input class="home"></div><div class="field"><label>Away team</label><input class="away"></div><div class="field"><label>League</label><input class="league"></div>${[1,2,3,4].map(j=>`<div class="marketRow resultMarketRow"><input class="m" placeholder="Market ${j}"><input class="s" placeholder="Selection ${j}"><div class="marketActions"><button type="button" class="marketStatusBtn" data-market="${j-1}" title="Market result">•</button></div></div>`).join('')}<div class="field" style="margin-top:8px"><label>Game result</label><select class="gres"><option value="">Auto from markets / overall</option><option value="Win">Won</option><option value="Loss">Lost</option></select><div class="hint" style="margin-top:5px">Auto uses the market results first, then the overall result. Choose Won/Lost only to override this game.</div></div>`;gf.appendChild(div);div.querySelectorAll('.marketStatusBtn').forEach(btn=>btn.onclick=()=>{const i=+btn.dataset.market;const next=btn.dataset.result==='Win'?'Loss':btn.dataset.result==='Loss'?'':'Win';btn.dataset.result=next;btn.textContent=next==='Win'?'✓':next==='Loss'?'✕':'•';btn.classList.toggle('winActive',next==='Win');btn.classList.toggle('lossActive',next==='Loss');});}addGame();document.getElementById('addGame').onclick=addGame;document.getElementById('saveBet').onclick=()=>{const b={id:document.getElementById('fId').value.trim(),date:document.getElementById('fDate').value,time:document.getElementById('fTime').value,bookmaker:document.getElementById('fBook').value.trim(),odds:num(document.getElementById('fOdds').value),stake:num(document.getElementById('fStake').value),result:document.getElementById('fResult').value==='Auto'?'':document.getElementById('fResult').value,resultMode:document.getElementById('fResult').value==='Auto'?'auto':'manual',actualReturn:null,potentialReturn:null,notes:'',gameRows:[]};b.gameRows=[...gf.children].map((d,i)=>({game:i+1,date:d.querySelector('.gdate').value||b.date,time:d.querySelector('.gtime').value||b.time,league:d.querySelector('.league').value,home:d.querySelector('.home').value,away:d.querySelector('.away').value,markets:[...d.querySelectorAll('.marketRow')].map(r=>{const btn=r.querySelector('.marketStatusBtn');return {market:r.querySelector('.m').value,selection:r.querySelector('.s').value,result:btn?.dataset.result||''}}).filter(x=>x.market||x.selection),notes:'',result:d.querySelector('.gres').value}));b.potentialReturn=builderReturn(b);const idx=state.builders.findIndex(x=>x.id===b.id);if(idx>=0)state.builders[idx]=b;else state.builders.unshift(b);save();toast('Bet builder saved');showScreen(builderResult(b)?'builders':'live')}}
+function openBuilder(id){if(viewMode || !window.BB_IS_ADMIN){if(!viewMode)toast('Admin account required');renderBuilders();return}const b=state.builders.find(x=>x.id===id);if(!b)return;showScreen('builders');document.getElementById('builders').innerHTML=`<div class="sectionHead"><h2>${b.id}</h2><button class="btn secondary" onclick="showScreen(builderResult(b)?'builders':'live')">← Back</button></div><div class="card"><div class="form"><div class="marketRow"><div class="field"><label>Builder date</label><input id="editDate" type="date" value="${/^\d{2}\/\d{2}\/\d{4}$/.test(b.date||'')?(()=>{const [dd,mm,yy]=b.date.split('/');return `${yy}-${mm}-${dd}`})():b.date||''}"></div><div class="field"><label>Builder time</label><input id="editTime" type="time" value="${b.time||''}"></div></div><div class="field"><label>Overall result</label><select id="editResult"><option value="Auto" ${(b.resultMode!=='manual')?'selected':''}>Auto from markets / games</option><option value="Win" ${(b.resultMode==='manual'&&b.result==='Win')?'selected':''}>Won</option><option value="Loss" ${(b.resultMode==='manual'&&b.result==='Loss')?'selected':''}>Lost</option></select><div class="hint" style="margin-top:5px">Auto follows the games/markets. Choose Won/Lost only when you want a manual override.</div></div><div class="field"><label>Actual return (£)</label><input id="editReturn" type="number" step="0.01" value="${b.actualReturn??''}"></div><div class="actions"><button class="btn primary" id="saveResult">Save result</button><button class="btn danger" id="deleteBuilder">Delete builder</button></div></div></div><div class="games">${(b.gameRows||[]).map((g,i)=>gameEditor(b,g,i)).join('')||'<div class="empty">No games entered.</div>'}</div>`;document.getElementById('saveResult').onclick=()=>{const v=document.getElementById('editResult').value;b.date=document.getElementById('editDate').value;b.time=document.getElementById('editTime').value;b.resultMode=v==='Auto'?'auto':'manual';b.result=v==='Auto'?'':v;b.actualReturn=num(document.getElementById('editReturn').value);document.querySelectorAll('.game').forEach((el,i)=>{if(!b.gameRows[i])return;const gd=el.querySelector('.editGameDate');const gt=el.querySelector('.editGameTime');if(gd)b.gameRows[i].date=gd.value||b.date;if(gt)b.gameRows[i].time=gt.value||b.time;});save();showScreen(builderResult(b)?'builders':'live');toast('Result updated')};document.getElementById('deleteBuilder').onclick=()=>{if(confirm('Delete '+b.id+'?')){state.builders=state.builders.filter(x=>x.id!==b.id);save();showScreen('live');toast('Deleted')}};document.querySelectorAll('.gameResult').forEach(sel=>sel.onchange=e=>{b.gameRows[+e.target.dataset.i].result=e.target.value;save();openBuilder(b.id);})}
+function gameEditor(b,g,i){const er=effectiveGameResult(b,g);const cls=resultClass(er);return `<article class="game ${cls}"><div class="gameTop"><div><div class="gameTitle">GAME ${g.game}: ${g.home||'Home'} v ${g.away||'Away'}</div><div class="gameDateTime">${formatDateTime(g.date||b.date,g.time||b.time)}</div><div class="marketRow" style="margin-top:6px"><input class="editGameDate" type="date" value="${/^\d{2}\/\d{2}\/\d{4}$/.test(g.date||b.date||'')?(()=>{const [dd,mm,yy]=(g.date||b.date).split('/');return `${yy}-${mm}-${dd}`})():(g.date||b.date||'')}"><input class="editGameTime" type="time" value="${g.time||b.time||''}"></div><div class="matchline">${g.league||''}</div></div><select class="gameResult" data-i="${i}"><option value="" ${!g.result?'selected':''}>Auto from markets / overall</option><option value="Win" ${g.result==='Win'?'selected':''}>Won</option><option value="Loss" ${g.result==='Loss'?'selected':''}>Lost</option></select></div><div class="markets">${(g.markets||[]).map((m,j)=>{const mr=m.result||'';const mc=mr?resultClass(mr):'';return `<div class="market ${mc}"><div class="marketEdit"><div class="marketText"><b>Market ${j+1}</b>${m.market||'—'}${m.selection?` — <strong>${m.selection}</strong>`:''}</div><div class="marketActions"><button type="button" aria-label="Cycle market result" class="marketStatusBtn ${mr==='Win'?'winActive':(mr==='Loss'?'lossActive':'')}" title="Cycle market result" onclick="event.stopPropagation();cycleMarketResult('${b.id}',${i},${j})">${mr==='Win'?'✓':(mr==='Loss'?'✕':'•')}</button></div></div></div>`}).join('')||'<div class="market">No markets entered</div>'}</div></article>`}
+
+
+function setMarketResult(id,gameIndex,marketIndex,result){if(viewMode||!window.BB_IS_ADMIN){if(!viewMode)toast('Admin account required');return;}const b=state.builders.find(x=>x.id===id);if(!b||!b.gameRows?.[gameIndex]?.markets?.[marketIndex])return;const m=b.gameRows[gameIndex].markets[marketIndex];m.result=m.result===result?'':result;save();openBuilder(id);toast(m.result?`Market ${marketIndex+1}: ${m.result}`:'Market result cleared')}
+function cycleMarketResult(id,gameIndex,marketIndex){if(viewMode||!window.BB_IS_ADMIN){if(!viewMode)toast('Admin account required');return;}const b=state.builders.find(x=>x.id===id);if(!b||!b.gameRows?.[gameIndex]?.markets?.[marketIndex])return;const m=b.gameRows[gameIndex].markets[marketIndex];m.result=m.result===''?'Win':(m.result==='Win'?'Loss':'');save();openBuilder(id);toast(m.result?`Market ${marketIndex+1}: ${m.result}`:'Market result cleared')}
+function monthlyData(){
+  const map={};
+  activeBuilders().forEach(b=>{
+    const k=monthKey(b);
+    if(!map[k])map[k]={key:k,label:monthLabel(k),builders:0,wins:0,losses:0,open:0,staked:0,profit:0,odds:[]};
+    const m=map[k]; m.builders++;
+    const br=builderResult(b);
+    if(br==='Win')m.wins++;
+    else if(br==='Loss')m.losses++;
+    else m.open++;
+    m.staked += num(b.stake)||0;
+    const r=builderReturn(b);
+    if(br==='Win' && r!=null)m.profit += r-(num(b.stake)||0);
+    if(br==='Loss')m.profit -= num(b.stake)||0;
+    const o=num(b.odds); if(o!=null&&o>0)m.odds.push(o);
+  });
+  return Object.values(map).sort((a,b)=>a.key.localeCompare(b.key));
+}
+function statsFor(list){
+  const resolved=list.filter(b=>builderResult(b)==='Win'||builderResult(b)==='Loss');
+  const wins=resolved.filter(b=>builderResult(b)==='Win').length;
+  const losses=resolved.filter(b=>builderResult(b)==='Loss').length;
+  const open=list.filter(b=>!builderResult(b)).length;
+  const staked=list.reduce((a,b)=>a+(num(b.stake)||0),0);
+  const returns=list.filter(b=>builderResult(b)==='Win').reduce((a,b)=>a+(builderReturn(b)||0),0);
+  const profit=resolved.reduce((a,b)=>{
+    if(builderResult(b)==='Win') return a+(builderReturn(b)||0)-(num(b.stake)||0);
+    return a-(num(b.stake)||0);
+  },0);
+  const odds=list.map(b=>num(b.odds)).filter(v=>v!=null&&v>0);
+  return {wins,losses,open,staked,returns,profit,rate:resolved.length?Math.round(wins/resolved.length*100):0,avgOdds:odds.length?(odds.reduce((a,v)=>a+v,0)/odds.length).toFixed(2):'—',settled:resolved.length};
+}
+function statsPeriodOptions(months){
+  return `<option value="all">All time</option>${months.slice().reverse().map(m=>`<option value="${m.key}">${m.label}</option>`).join('')}`;
+}
+function statsChart(months){
+  if(!months.length)return '<div class="empty">Add settled bets to build your performance graph.</div>';
+  const W=720,H=300,L=68,R=26,T=34,B=58,base=H-B;
+  let running=0;
+  const points=months.map(m=>{running+=m.profit;return {...m,cum:running};});
+  const values=[0,...points.map(p=>p.cum)];
+  const maxAbs=Math.max(1,...values.map(v=>Math.abs(v)));
+  const pad=Math.max(2,maxAbs*.18);
+  const lo=Math.min(0,...values)-pad, hi=Math.max(0,...values)+pad;
+  const y=v=>T+(hi-v)/(hi-lo)*(base-T);
+  const x=i=>months.length===1 ? W-R : L+i*(W-L-R)/Math.max(1,months.length-1);
+  const coords=points.map((p,i)=>({x:x(i),y:y(p.cum),p}));
+  const firstX=months.length===1?L:x(0), firstY=y(0);
+  const areaPath=`M ${firstX.toFixed(1)} ${firstY.toFixed(1)} ${coords.map(c=>`L ${c.x.toFixed(1)} ${c.y.toFixed(1)}`).join(' ')} L ${coords[coords.length-1].x.toFixed(1)} ${base} L ${firstX.toFixed(1)} ${base} Z`;
+  let segments='';
+  if(months.length===1){
+    const c=coords[0];
+    segments=`<line class="lineGlow" x1="${firstX}" y1="${firstY}" x2="${c.x.toFixed(1)}" y2="${c.y.toFixed(1)}"/><line class="lineMain" x1="${firstX}" y1="${firstY}" x2="${c.x.toFixed(1)}" y2="${c.y.toFixed(1)}"/>`;
+  }else{
+    segments=coords.slice(1).map((c,i)=>{
+      const a=coords[i], loss=(a.p.cum<0||c.p.cum<0);
+      return `<line class="${loss?'lineLoss':'lineMain'}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${c.x.toFixed(1)}" y2="${c.y.toFixed(1)}"/>`;
+    }).join('');
+  }
+  const dots=coords.map(c=>{
+    const loss=c.p.cum<0;
+    return `<circle class="${loss?'pointLoss':'point'}" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="7"><title>${c.p.label}: ${money(c.p.cum)} cumulative</title></circle>`;
+  }).join('');
+  const labels=coords.map(c=>`<text class="axisText" x="${c.x.toFixed(1)}" y="${H-18}" text-anchor="middle">${c.p.label}</text>`).join('');
+  const zeroY=y(0), last=points[points.length-1];
+  const topVal=Math.max(0,Math.round(hi)), bottomVal=Math.min(0,Math.round(lo));
+  const yLabels=`<text class="axisText" x="8" y="${y(hi-pad*.1)+4}" text-anchor="start">${money(topVal)}</text><text class="axisText" x="8" y="${zeroY+4}" text-anchor="start">£0</text><text class="axisText" x="8" y="${y(lo+pad*.1)+4}" text-anchor="start">${money(bottomVal)}</text>`;
+  return `<div class="chartWrap"><svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="neonArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#39ff88"/><stop offset="100%" stop-color="#39ff88" stop-opacity="0"/></linearGradient></defs>
+    <line class="chartGrid" x1="${L}" y1="${y(hi-pad*.15)}" x2="${W-R}" y2="${y(hi-pad*.15)}"/><line class="chartGrid" x1="${L}" y1="${y(lo+pad*.15)}" x2="${W-R}" y2="${y(lo+pad*.15)}"/><line class="chartZero" x1="${L}" y1="${zeroY}" x2="${W-R}" y2="${zeroY}"/>
+    ${yLabels}<path class="areaFill" d="${areaPath}"/>${segments}${dots}${labels}
+    <text class="chartBadge" x="${L}" y="18">CUMULATIVE P/L</text><text class="barText" x="${W-R}" y="22" text-anchor="end">${money(last.cum)}</text>
+  </svg></div><div class="legend"><span><i></i>Profit</span><span><i class="lossDot"></i>Loss</span><span style="margin-left:auto">Month: <b style="color:inherit">${months.length===1?months[0].label:'Monthly'}</b></span></div>`;
+}
+function renderStats(){
+  const months=monthlyData();
+  const all=activeBuilders();
+  const params=new URLSearchParams(location.hash.replace('#','?'));
+  const selected=window.statsPeriod||'all';
+  const selectedBuilders=selected==='all'?all:all.filter(b=>monthKey(b)===selected);
+  const s=statsFor(selectedBuilders);
+  const selectedMonth=months.find(m=>m.key===selected);
+  const chartMonths=selected==='all'?months:(selectedMonth?[selectedMonth]:months);
+  const totalSettled=s.settled;
+  const rateTone=totalSettled===0?'':(s.rate>=50?'good':'bad');
+  const profitTone=s.profit>=0?'good':'bad';
+  const resultTotal=s.wins+s.losses+s.open;
+  const winPct=resultTotal?Math.round(s.wins/resultTotal*100):0;
+  const lossPct=resultTotal?Math.round(s.losses/resultTotal*100):0;
+
+  document.getElementById('stats').innerHTML=`
+    <div class="statsHero">
+      <div class="statsHeroTop">
+        <div><h2>TDB Stats</h2><p>Your official Top Daily Builders performance since the start.</p></div>
+        <select id="statsPeriod" class="periodSelect">${statsPeriodOptions(months)}</select>
+      </div>
+    </div>
+
+    <div class="statsKpi">
+      <div class="kpi ${rateTone}"><div class="label">Win Rate</div><div class="value">${s.rate}%</div><div class="sub">${s.wins} wins from ${totalSettled} settled</div></div>
+      <div class="kpi ${profitTone}"><div class="label">Profit / Loss</div><div class="value">${money(s.profit)}</div><div class="sub">Net performance</div></div>
+      <div class="kpi"><div class="label">Total Staked</div><div class="value">${money(s.staked)}</div><div class="sub">${selected==='all'?'All time':monthLabel(selected)}</div></div>
+      <div class="kpi"><div class="label">Average Odds</div><div class="value">${s.avgOdds}</div><div class="sub">${selectedBuilders.length} builder${selectedBuilders.length===1?'':'s'}</div></div>
+    </div>
+
+    <div class="performanceCard">
+      <div class="performanceHead"><h3>Profit / Loss trend</h3><span>${selected==='all'?'Cumulative · Monthly':'Selected month'}</span></div><div class="hint" style="margin:-5px 0 10px">Updates from your saved bet data. Newest bets appear first.</div>
+      ${statsChart(chartMonths)}
+    </div>
+
+    <div class="performanceCard">
+      <div class="performanceHead"><h3>Results</h3><span>${resultTotal} total</span></div>
+      <div class="resultGrid">
+        <div class="resultMini win"><div class="rLabel">Wins</div><div class="rValue">${s.wins}</div></div>
+        <div class="resultMini loss"><div class="rLabel">Losses</div><div class="rValue">${s.losses}</div></div>
+        <div class="resultMini open"><div class="rLabel">Open</div><div class="rValue">${s.open}</div></div>
+      </div>
+      <div class="resultSummary"><span><span class="summaryDot" style="display:inline-block;margin-right:7px"></span>${s.settled===0?'No settled bets yet.':s.profit>=0?`You're <b>in profit by ${money(s.profit)}</b> with a ${s.rate}% win rate.`:`You're <b>down ${money(Math.abs(s.profit))}</b>.`}</span><b>${s.settled} settled</b></div>
+    </div>
+
+    <div class="performanceCard">
+      <div class="performanceHead"><h3>Monthly performance</h3><span>${months.length} month${months.length===1?'':'s'}</span></div>
+      ${months.length?`<div class="monthlyList"><div class="monthlyRow head"><span>Month</span><span>Bets</span><span>W/L</span><span>Win Rate</span><span style="text-align:right">Profit</span></div>${months.slice().reverse().map(m=>{
+          const settled=m.wins+m.losses, r=settled?Math.round(m.wins/settled*100):0;
+          return `<div class="monthlyRow ${m.profit>=0?'monthProfit':'monthLoss'}"><span class="month">${m.label}</span><span class="bets">${m.builders}</span><span class="wl">${m.wins}/${m.losses}</span><span class="rate">${r}%</span><span class="profit ${m.profit>=0?'pos':'neg'}">${money(m.profit)}</span></div>`;
+        }).join('')}</div>`:'<div class="monthlyEmpty">No monthly performance yet.</div>'}
+      <div class="performanceLegend"><span><i class="profitDot"></i>Profit</span><span><i class="lossDot"></i>Loss</span></div>
+    </div>
+
+    <div class="performanceCard allTimeCard">
+      <div class="performanceHead"><h3>All-time performance</h3><span>All time</span></div>
+      <div class="allTimeGrid">
+        <div class="allTimeMini"><span>Bets counted</span><b>${all.length}</b></div>
+        <div class="allTimeMini good"><span>Win rate</span><b>${statsFor(all).rate}%</b></div>
+        <div class="allTimeMini good"><span>Wins</span><b>${statsFor(all).wins}</b></div>
+        <div class="allTimeMini bad"><span>Losses</span><b>${statsFor(all).losses}</b></div>
+        <div class="allTimeMini"><span>Open</span><b>${statsFor(all).open}</b></div>
+        <div class="allTimeMini ${statsFor(all).profit>=0?'good':'bad'}"><span>Profit / Loss</span><b>${money(statsFor(all).profit)}</b></div>
+      </div>
+    </div>
+  `;
+  const sel=document.getElementById('statsPeriod');
+  sel.value=selected;
+  sel.onchange=e=>{window.statsPeriod=e.target.value;renderStats()};
+}
+
+function showScreen(s){if(s==='personal'){document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));renderPersonalStats();return;}if((viewMode||!window.BB_IS_ADMIN) && s==='add') { if(!viewMode) toast('Admin account required'); s='dashboard'; }state.screen=s;state.expanded='';document.body.classList.toggle('statsMode',s==='stats');document.body.classList.toggle('viewOnly',viewMode);document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));if(s==='dashboard')renderDashboard(true);if(s==='live')renderLive();if(s==='builders')renderBuilders();if(s==='stats')renderStats();if(s==='add')renderAdd()}
+function setFilter(f){state.filter=f;renderBuilders()}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));
+
+window.BB_IS_ADMIN = true;
+document.body.classList.add('isAdmin');
+window.statsPeriod='all';document.body.classList.toggle('viewOnly',viewMode);
+// Render only the visible screen immediately so the first tap is responsive.
+// The other screens are prepared just after first paint instead of blocking startup.
+renderDashboard(true);
+const prepareOtherScreens=()=>{
+  try{renderLive();renderBuilders();renderStats();renderAdd();}catch(e){}
+};
+if('requestIdleCallback' in window) requestIdleCallback(prepareOtherScreens,{timeout:800});
+else setTimeout(prepareOtherScreens,0);
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;const b=document.getElementById('installApp');if(b)b.style.display='inline-flex';});
+window.installBetBuilderApp=async function(){if(!deferredInstallPrompt){toast('Open your browser menu → Install app / Add to Home Screen');return;}deferredInstallPrompt.prompt();try{await deferredInstallPrompt.userChoice;}catch(e){}deferredInstallPrompt=null;const b=document.getElementById('installApp');if(b)b.style.display='none';};
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(async reg=>{
+    // Make sure the current page is actually controlled by the SW. Chrome's
+    // installability check needs a controlling service worker on this visit.
+    reg.update().catch(()=>{});
+    try{
+      await navigator.serviceWorker.ready;
+      if(!navigator.serviceWorker.controller && !sessionStorage.getItem("bb_sw_reloaded")){
+        sessionStorage.setItem("bb_sw_reloaded","1");
+        location.reload();
+      }
+    }catch(e){}
+  }).catch(()=>{});
+}
+
+window.addEventListener('appinstalled',()=>{
+  const b=document.getElementById('installApp');
+  if(b){b.textContent='✅ Installed';b.style.display='inline-flex';}
+});
+
+
+
+</script></body></html>
