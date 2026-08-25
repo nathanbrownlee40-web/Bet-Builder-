@@ -802,8 +802,8 @@ function renderStats(){
 
 
 // ===== Value Scanner =====
-const VALUE_STATE={key:localStorage.getItem('bba_api_key')||'', date:new Date().toISOString().slice(0,10), fixtures:[], results:[], running:false, statsCalls:0, maxStatsCalls:35};
-const Vfetch=async (url)=>{const r=await fetch(url,{headers:{'x-apisports-key':VALUE_STATE.key}});if(!r.ok)throw new Error('API '+r.status);const j=await r.json();if(j.errors&&Object.keys(j.errors).length)throw new Error(Object.values(j.errors).join(', '));return j.response||[]};
+const VALUE_STATE={key:'server', date:new Date().toISOString().slice(0,10), fixtures:[], results:[], running:false, statsCalls:0, maxStatsCalls:35};
+const Vfetch=async (url)=>{const r=await fetch(url);if(!r.ok)throw new Error('API '+r.status);const j=await r.json();if(j.errors&&Object.keys(j.errors).length)throw new Error(Object.values(j.errors).join(', '));return j.response||[]};
 const Vnum=x=>typeof x==='number'?x:(x==null?null:parseFloat(String(x).replace(/[^0-9.-]/g,'')));
 const Vclamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 function poisson(lambda,k){if(lambda<=0)return k===0?1:0;let p=Math.exp(-lambda);for(let i=1;i<=k;i++)p*=lambda/i;return p}
@@ -824,8 +824,8 @@ function fairOdds(p){return p>0?1/p:null}
 function ev(p,odds){return p&&odds?(p*odds-1):null}
 function normTeam(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'')}
 function teamMatch(a,b){a=normTeam(a);b=normTeam(b);return a===b||a.includes(b)||b.includes(a)}
-async function findTeamHistory(teamId){return Vfetch('/.netlify/functions/football-api/fixtures?team='+teamId+'&last=20&status=FT');}
-async function getOdds(fixtureId){try{return await Vfetch('/.netlify/functions/football-api/odds?fixture='+fixtureId);}catch(e){return []}}
+async function findTeamHistory(teamId){return Vfetch('/.netlify/functions/football-api?path=fixtures&team='+teamId+'&last=20&status=FT');}
+async function getOdds(fixtureId){try{return await Vfetch('/.netlify/functions/football-api?path=odds&fixture='+fixtureId);}catch(e){return []}}
 function parseOdds(odds){
  const out={};
  for(const book of odds||[]){for(const bet of (book.bets||[])){
@@ -840,11 +840,10 @@ function parseOdds(odds){
  }} return out;
 }
 async function runValueScan(){
- if(!VALUE_STATE.key){toast('Enter your API-Football key first');return}
- VALUE_STATE.key=document.getElementById('valueApiKey').value.trim();localStorage.setItem('bba_api_key',VALUE_STATE.key);
+ 
  VALUE_STATE.date=document.getElementById('valueDate').value;VALUE_STATE.running=true;VALUE_STATE.results=[];VALUE_STATE.statsCalls=0;renderValue();
  try{
-  const fx=await Vfetch('/.netlify/functions/football-api/fixtures?date='+encodeURIComponent(VALUE_STATE.date)+'&status=NS');
+  const fx=await Vfetch('/.netlify/functions/football-api?path=fixtures&date='+encodeURIComponent(VALUE_STATE.date)+'&status=NS');
   VALUE_STATE.fixtures=fx.slice(0,20);
   for(let i=0;i<VALUE_STATE.fixtures.length;i++){
    const f=VALUE_STATE.fixtures[i]; renderValueProgress(i+1,VALUE_STATE.fixtures.length);
@@ -861,7 +860,7 @@ async function runValueScan(){
 }
 function renderValueProgress(done,total){const el=document.getElementById('valueProgress');if(el)el.textContent='Analysing '+done+' of '+total+' fixtures…'}
 function renderValue(){const root=document.getElementById('value');if(!root)return;root.innerHTML=`<div class="sectionHead"><div><h2>💰 Value Scanner</h2><div class="hint">Modelled probabilities first, bookmaker price second. It does not call a bet “value” unless the price beats the model's fair price.</div></div></div>
- <div class="card"><div class="valueControls"><div class="field"><label>API-Football key</label></div><div class="marketRow"><div class="field"><label>Fixture date</label><input id="valueDate" type="date" value="${VALUE_STATE.date}"></div><div class="field"><label>Minimum EV to show</label><input id="valueMinEv" type="number" step="0.1" value="5"></div></div><button class="btn primary" id="runValue">${VALUE_STATE.running?'Scanning…':'🔎 Scan for value'}</button><div id="valueProgress" class="hint">${VALUE_STATE.running?'Starting scan…':VALUE_STATE.results.length?VALUE_STATE.results.length+' fixtures analysed.':'The model uses 20-match form where available and compares it with available bookmaker goal/BTTS prices.'}</div></div></div>
+ <div class="card"><div class="valueControls"><div class="field"><label>API-Football connection</label><div class="hint">🔐 Secure server connection — API key is stored in Netlify, not in this app.</div></div><div class="marketRow"><div class="field"><label>Fixture date</label><input id="valueDate" type="date" value="${VALUE_STATE.date}"></div><div class="field"><label>Minimum EV to show</label><input id="valueMinEv" type="number" step="0.1" value="5"></div></div><button class="btn primary" id="runValue">${VALUE_STATE.running?'Scanning…':'🔎 Scan for value'}</button><div id="valueProgress" class="hint">${VALUE_STATE.running?'Starting scan…':VALUE_STATE.results.length?VALUE_STATE.results.length+' fixtures analysed.':'The model uses up to 20-match form where available and compares model probabilities with bookmaker prices. API access is secured server-side.'}</div></div></div>
  <div class="valueWarn">⚠️ A positive EV result is a <b>modelled value candidate</b>, not proof of profit. The app must be backtested/calibrated before treating the model probability as trustworthy.</div>
  ${renderValueResults()}`;
  document.getElementById('runValue').onclick=runValueScan;
