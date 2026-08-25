@@ -1,0 +1,18 @@
+SECURE API SETUP
+
+This version keeps the API-Football key out of the browser.
+
+1. Deploy this project to Netlify.
+2. In Netlify: Site configuration -> Environment variables.
+3. Add:
+   Name: NETLIFY_API_KEY
+   Value: YOUR_API_FOOTBALL_KEY
+4. Redeploy the site.
+
+The browser calls:
+  /.netlify/functions/football-api
+
+The function adds the secret server-side when calling API-Football.
+
+IMPORTANT:
+The API key that was pasted into chat should be regenerated after testing, then put the new key into NETLIFY_API_KEY. Do not commit the key into the ZIP or source code.
