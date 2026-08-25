@@ -895,6 +895,29 @@ async function liveAnalyseFixtures(text){
  }
  analyserLiveData=results; status.textContent=`Live analysis complete: ${count} fixture(s). Last-5 form plus corners, cards and shots on target where data is available. ${statsCalls} statistics calls used.`; analyserRenderResults(results);
 }
+function analyserDetectEmbeddedScreenshot(img){
+  const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;
+  const c=document.createElement('canvas');c.width=Math.max(1,Math.round(W));c.height=Math.max(1,Math.round(H));
+  const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,W,H);
+  const d=ctx.getImageData(0,0,W,H).data;
+  let minX=W,maxX=0,minY=H,maxY=0,count=0;
+  // Detect the strong blue header of an embedded football-app screenshot.
+  for(let y=Math.floor(H*.12);y<Math.floor(H*.78);y+=2){
+    for(let x=0;x<W;x+=2){
+      const i=(y*W+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+      if(b>125 && b>r*1.45 && b>g*1.22 && (b-r)>45){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);count++;}
+    }
+  }
+  if(count<150 || maxX<=minX || maxY<=minY) return null;
+  const width=maxX-minX+1;
+  // The fixture-list phone is usually a tall portrait crop under the blue header.
+  const x0=Math.max(0,minX-Math.round(width*.10));
+  const x1=Math.min(W,maxX+Math.round(width*.10));
+  const targetH=Math.round(width*2.85);
+  const y0=Math.max(0,minY-Math.round(width*.05));
+  const y1=Math.min(H,y0+targetH);
+  return {x:x0,y:y0,w:x1-x0,h:y1-y0,scale:Math.max(5,Math.min(8,1100/(x1-x0)))};
+}
 async function analyserScan(file){
  if(!file)return; try{
    const status=document.getElementById('analyserOCRStatus'); status.textContent='Preparing screenshot…';
@@ -903,20 +926,41 @@ async function analyserScan(file){
    const img=await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=URL.createObjectURL(file);});
    const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;
    const candidates=[];
-   const addCrop=(name,x,y,w,h,scale=2.8)=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*scale));c.height=Math.max(1,Math.round(h*scale));const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,x,y,w,h,0,0,c.width,c.height);const p=ctx.getImageData(0,0,c.width,c.height);for(let i=0;i<p.data.length;i+=4){const r=p.data[i],g=p.data[i+1],b=p.data[i+2];const yv=(r*299+g*587+b*114)/1000;const v=yv>150?255:0;p.data[i]=p.data[i+1]=p.data[i+2]=v;}ctx.putImageData(p,0,0);candidates.push({name,src:c.toDataURL('image/png')});};
-   addCrop('full',0,0,W,H,Math.min(2.5,Math.max(1.5,1800/W)));
-   addCrop('middle',W*.03,H*.12,W*.94,H*.76,2.5);
-   addCrop('left-fixtures',0,H*.22,W*.62,H*.58,3.2);
-   addCrop('center-fixtures',W*.10,H*.18,W*.80,H*.68,2.8);
-   addCrop('portrait-fixtures',0,H*.28,W*.55,H*.50,3.4);
-   const texts=[]; let best='';
-   for(let i=0;i<candidates.length;i++){status.textContent=`Scanning fixture area ${i+1}/${candidates.length}…`;try{const r=await Tesseract.recognize(candidates[i].src,'eng',{logger:m=>{if(m.status==='recognizing text'&&m.progress>.88)status.textContent=`Scanning fixture area ${i+1}/${candidates.length}…`;},tessedit_pageseg_mode:'11',preserve_interword_spaces:'1'});if(r?.data?.text){texts.push(r.data.text);if(r.data.text.length>best.length)best=r.data.text;}}catch(e){console.warn('OCR crop failed',candidates[i].name,e)}}
+   const addCrop=(name,x,y,w,h,scale=2.8,threshold=false)=>{
+     const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*scale));c.height=Math.max(1,Math.round(h*scale));
+     const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,x,y,w,h,0,0,c.width,c.height);
+     if(threshold){const p=ctx.getImageData(0,0,c.width,c.height);for(let i=0;i<p.data.length;i+=4){const r=p.data[i],g=p.data[i+1],b=p.data[i+2];const yv=(r*299+g*587+b*114)/1000;const v=yv>150?255:0;p.data[i]=p.data[i+1]=p.data[i+2]=v;}ctx.putImageData(p,0,0);}
+     candidates.push({name,src:c.toDataURL('image/png')});
+   };
+   // First priority: detect and crop a smaller screenshot embedded inside the uploaded photo.
+   const embedded=analyserDetectEmbeddedScreenshot(img);
+   if(embedded){
+     addCrop('embedded-color',embedded.x,embedded.y,embedded.w,embedded.h,embedded.scale,false);
+     addCrop('embedded-gray',embedded.x,embedded.y,embedded.w,embedded.h,embedded.scale,true);
+   }
+   addCrop('full',0,0,W,H,Math.min(2.5,Math.max(1.5,1800/W)),false);
+   addCrop('middle',W*.03,H*.12,W*.94,H*.76,2.5,false);
+   addCrop('left-fixtures',0,H*.22,W*.62,H*.58,3.2,false);
+   addCrop('center-fixtures',W*.10,H*.18,W*.80,H*.68,2.8,false);
+   addCrop('portrait-fixtures',0,H*.28,W*.55,H*.50,3.4,false);
+   const texts=[];
+   for(let i=0;i<candidates.length;i++){
+     status.textContent=`Scanning fixture area ${i+1}/${candidates.length}…`;
+     for(const psm of [6,11]){
+       try{
+         const r=await Tesseract.recognize(candidates[i].src,'eng',{logger:m=>{if(m.status==='recognizing text'&&m.progress>.9)status.textContent=`Scanning fixture area ${i+1}/${candidates.length}…`;},tessedit_pageseg_mode:String(psm),preserve_interword_spaces:'1'});
+         if(r?.data?.text)texts.push(r.data.text);
+       }catch(e){console.warn('OCR crop failed',candidates[i].name,psm,e)}
+     }
+   }
    analyserOCRText=texts.join('\n');
-   const lines=analyserOcrLines(analyserOCRText); const likely=analyserGuessPairs(analyserOCRText); status.textContent=`Screenshot read: ${lines.length} useful text lines${likely.length?` and ${likely.length} possible fixture pair${likely.length===1?'':'s'}`:''}. Tap ⚡ Analyse screenshot with live last-5 data.`;
+   const lines=analyserOcrLines(analyserOCRText); const likely=analyserGuessPairs(analyserOCRText);
+   status.textContent=`Screenshot read: ${lines.length} useful lines${likely.length?` · ${likely.length} possible fixture${likely.length===1?'':'s'} detected`:''}. Tap ⚡ Analyse screenshot with live last-5 data.`;
+   // Show any spreadsheet matches as a preview, but don't block live analysis if none match.
    analyserRenderResults(analyserFindMatches(analyserOCRText));
- }catch(e){console.error(e);document.getElementById('analyserOCRStatus').textContent='Could not process screenshot. Try again — the analyser now supports full screenshots and screenshots containing a smaller fixture image.';}
+ }catch(e){console.error(e);document.getElementById('analyserOCRStatus').textContent='Could not process screenshot. Try again — the analyser supports full screenshots and screenshots containing a smaller fixture image.';}
 }
-function renderAnalyser(){document.getElementById('analyser').innerHTML=`<div class="sectionHead"><h2>Bet Builder Analyser</h2></div><div class="analyserHero"><h2>🔎 Find betting opportunities</h2><p>Upload a fixture screenshot, then run live analysis. The app reads the teams, pulls each team’s latest 5 completed matches and calculates goal/BTTS opportunities with safer alternatives. The original spreadsheet opportunities remain available as a fallback.</p></div><div class="analyserTools"><div class="analyserUpload"><b>📸 Import fixture screenshot</b><input id="analyserScreenshot" type="file" accept="image/*"><img id="analyserPreview" class="analyserPreview"><div id="analyserOCRStatus" class="hint" style="margin-top:8px">No screenshot scanned yet.</div></div><div class="card"><input id="analyserSearch" class="analyserSearch" placeholder="Search teams, league or market…"><button class="analyserBtn primary" id="analyserLiveBtn" style="margin-top:9px;width:100%">⚡ Analyse screenshot with live last-5 data</button><div class="hint" style="margin-top:7px">Uses your football-data key to research the teams and calculate markets from their latest 5 completed matches.</div></div></div><div id="analyserResults"></div><div id="analyserBuilder" class="analyserBuilder"></div>`;document.getElementById('analyserScreenshot').onchange=e=>analyserScan(e.target.files[0]);document.getElementById('analyserSearch').oninput=analyserSearch;document.getElementById('analyserLiveBtn').onclick=async()=>{try{if(!analyserOCRText)throw new Error('Upload a fixture screenshot first.');document.getElementById('analyserLiveBtn').disabled=true;await liveAnalyseFixtures(analyserOCRText);}catch(e){toast(e.message||'Live analysis failed');document.getElementById('analyserOCRStatus').textContent=e.message||'Live analysis failed';}finally{document.getElementById('analyserLiveBtn').disabled=false;}};analyserRenderResults(ANALYSER_DATA);analyserRenderBuilder();}
+function renderAnalyser(){document.getElementById('analyser').innerHTML=`<div class="sectionHead"><h2>Bet Builder Analyser</h2></div><div class="analyserHero"><h2>🔎 Find betting opportunities</h2><p>Upload a fixture screenshot, then run live analysis. The app reads the teams, pulls each team’s latest 5 completed matches and calculates <b>Goals, BTTS, Corners, Cards & Shots on Target</b> with confidence scores and safer alternatives.</p></div><div class="analyserTools"><div class="analyserUpload"><b>📸 Import fixture screenshot</b><input id="analyserScreenshot" type="file" accept="image/*"><img id="analyserPreview" class="analyserPreview"><div id="analyserOCRStatus" class="hint" style="margin-top:8px">No screenshot scanned yet.</div></div><div class="card"><input id="analyserSearch" class="analyserSearch" placeholder="Search teams, league or market…"><button class="analyserBtn primary" id="analyserLiveBtn" style="margin-top:9px;width:100%">⚡ Analyse screenshot with live last-5 data</button><div class="hint" style="margin-top:7px">Uses your football-data key to research the teams and calculate markets from their latest 5 completed matches.</div></div></div><div id="analyserResults"></div><div id="analyserBuilder" class="analyserBuilder"></div>`;document.getElementById('analyserScreenshot').onchange=e=>analyserScan(e.target.files[0]);document.getElementById('analyserSearch').oninput=analyserSearch;document.getElementById('analyserLiveBtn').onclick=async()=>{try{if(!analyserOCRText)throw new Error('Upload a fixture screenshot first.');document.getElementById('analyserLiveBtn').disabled=true;await liveAnalyseFixtures(analyserOCRText);}catch(e){toast(e.message||'Live analysis failed');document.getElementById('analyserOCRStatus').textContent=e.message||'Live analysis failed';}finally{document.getElementById('analyserLiveBtn').disabled=false;}};analyserRenderResults(ANALYSER_DATA);analyserRenderBuilder();}
 function showScreen(s){if(s==='personal'){document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));renderPersonalStats();return;}if((viewMode||!window.BB_IS_ADMIN) && s==='add') { if(!viewMode) toast('Admin account required'); s='dashboard'; }state.screen=s;state.expanded='';document.body.classList.toggle('statsMode',s==='stats');document.body.classList.toggle('viewOnly',viewMode);document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));if(s==='dashboard')renderDashboard(true);if(s==='live')renderLive();if(s==='builders')renderBuilders();if(s==='stats')renderStats();if(s==='analyser')renderAnalyser();if(s==='add')renderAdd()}
 function setFilter(f){state.filter=f;renderBuilders()}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));
