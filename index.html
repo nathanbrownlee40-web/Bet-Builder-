@@ -855,9 +855,9 @@ function valueStat(statistics,name){const x=(statistics||[]).find(s=>String(s.ty
 function valueFixtureDate(){return document.getElementById('valueDate')?.value||VALUE_STATE.date}
 function renderValue(){
   const el=document.getElementById('value'); if(!el)return;
-  el.innerHTML=`<div class="valueHero"><h2>💰 Value Scanner</h2><p>Major leagues & cups first. The scanner gets fixtures by date, then models goals, corners, cards and shots on target from available match statistics. A value flag only appears when the model probability beats the supplied bookmaker price.</p></div>
+  el.innerHTML=`<div class="valueHero"><h2>💰 Value Scanner</h2><p>Major leagues & cups first. The scanner gets fixtures by date, models the available goals, corners, cards and shots-on-target data, and shows the model's probability and fair odds <b>even when bookmaker odds are unavailable</b>. Bookmaker prices are optional and only used to calculate EV/value.</p></div>
   <div class="valueControls"><div class="valueGrid"><div class="field"><label>Fixture date</label><input id="valueDate" type="date" value="${valueEsc(VALUE_STATE.date)}"></div><div class="field"><label>Minimum EV to show (%)</label><input id="valueMinEV" type="number" min="0" step="1" value="${VALUE_STATE.minEV}"></div></div>
-  <div class="hint"><b>Automatic bookmaker odds:</b> the scanner pulls the available pre-match prices for the selected date, matches them to each fixture and market, then compares them with the model's fair odds. If a market has no bookmaker price, it is shown as <b>price unavailable</b> rather than being treated as value.</div>
+  <div class="hint"><b>Bookmaker odds are optional:</b> the scanner first shows the model opportunities, probability and fair odds. If bookmaker prices are returned, they are added and EV/value is calculated automatically. If not, you can simply compare the <b>fair odds</b> with your bookmaker yourself.</div>
   <div class="actions"><button class="btn primary" id="valueScanBtn">🔎 Scan major leagues & cups</button></div><div id="valueStatus" class="valueStatus"></div></div>
   <div class="sectionHead"><h2>Top opportunities</h2><span class="small" id="valueCount">0 shown</span></div><div class="valueFilters"><button class="valuePill active" data-vfilter="all">All</button><button class="valuePill" data-vfilter="goals">⚽ Goals</button><button class="valuePill" data-vfilter="corners">🚩 Corners</button><button class="valuePill" data-vfilter="cards">🟨 Cards</button><button class="valuePill" data-vfilter="sot">🎯 Shots on Target</button></div><div id="valueResults" class="valueResults"><div class="valueEmpty">Choose a date and scan. Major leagues and cups will be prioritised instead of youth/reserve fixtures.</div></div>`;
   document.getElementById('valueScanBtn').onclick=scanValue;
@@ -931,23 +931,30 @@ async function scanValue(){
       const promise=(async()=>{
         const d=await valueApi('?action=team_last5&team='+teamId);
         const fs=(d.response||[]).filter(x=>['FT','AET','PEN'].includes(x?.fixture?.status?.short)).slice(0,5);
-        let goals=0,corners=0,cards=0,sot=0,n=0;
+        let goals=0,corners=0,cards=0,sot=0,nGoals=0,nStats=0;
         for(const x of fs){
           const id=x.fixture?.id;if(!id)continue;
+          const isHome=Number(x.teams?.home?.id)===Number(teamId);
+          const gf=isHome?x.goals?.home:x.goals?.away;
+          // Goals are available directly on the completed fixture, so do not
+          // throw them away just because the separate statistics endpoint is
+          // unavailable on a lower API plan.
+          if(gf!=null){goals+=Number(gf)||0;nGoals++;}
           try{
             const st=await valueApi('?action=stats&fixture='+id);
             const rows=st.response||[];const row=rows.find(r=>Number(r.team?.id)===Number(teamId));
             if(!row)continue;
-            const isHome=Number(x.teams?.home?.id)===Number(teamId);
-            const gf=isHome?x.goals?.home:x.goals?.away;
-            goals+=Number(gf??0);
-            corners+=valueStat(row.statistics,'Corner Kicks')||0;
-            cards+=(valueStat(row.statistics,'Yellow Cards')||0)+(valueStat(row.statistics,'Red Cards')||0);
-            sot+=valueStat(row.statistics,'Shots on Goal')||0;
-            n++;
-          }catch(e){/* missing stats for a historical fixture */}
+            const c=valueStat(row.statistics,'Corner Kicks');
+            const yc=valueStat(row.statistics,'Yellow Cards');
+            const rc=valueStat(row.statistics,'Red Cards');
+            const so=valueStat(row.statistics,'Shots on Goal');
+            if(c!=null)corners+=c;
+            if(yc!=null||rc!=null)cards+=(yc||0)+(rc||0);
+            if(so!=null)sot+=so;
+            if(c!=null||yc!=null||rc!=null||so!=null)nStats++;
+          }catch(e){/* keep fixture goals even when detailed stats are unavailable */}
         }
-        return {avgGoals:n?goals/n:null,avgCorners:n?corners/n:null,avgCards:n?cards/n:null,avgSOT:n?sot/n:null,n};
+        return {avgGoals:nGoals?goals/nGoals:null,avgCorners:nStats?corners/nStats:null,avgCards:nStats?cards/nStats:null,avgSOT:nStats?sot/nStats:null,n:nGoals,statsN:nStats};
       })();
       teamStatsCache.set(teamId,promise);return promise;
     }
@@ -999,7 +1006,8 @@ async function scanValue(){
     VALUE_STATE.results=out.sort((x,y)=>(y.ev??-999)-(x.ev??-999)||y.score-x.score);
     renderValueResults();
     const priced=out.filter(x=>x.ev!=null&&x.ev>=VALUE_STATE.minEV).length;
-    if(status){status.className='valueStatus ok';status.textContent=`Scan complete: ${unique.length} major fixtures found, ${out.length} model markets generated, ${priced} currently meet your ${VALUE_STATE.minEV}% EV filter.`}
+    const withOdds=out.filter(x=>x.price).length;
+    if(status){status.className='valueStatus ok';status.textContent=`Scan complete: ${unique.length} major fixtures found, ${out.length} model markets generated. ${withOdds} markets have bookmaker prices; all other markets are still shown with fair odds.`}
   }catch(e){
     if(status){status.className='valueStatus err';status.textContent=e.message||'Scan failed.'}
     const box=document.getElementById('valueResults');if(box)box.innerHTML='<div class="valueNotice">'+valueEsc(e.message||'Unable to scan. Make sure the Netlify function has API_FOOTBALL_KEY configured.')+'</div>';
@@ -1011,12 +1019,12 @@ function renderValueResults(){
   const min=valueNum(document.getElementById('valueMinEV')?.value)||VALUE_STATE.minEV;
   rows=rows.slice().sort((a,b)=>(b.ev??-999)-(a.ev??-999)||b.p-a.p).slice(0,50);
   const count=document.getElementById('valueCount');if(count)count.textContent=rows.length+' shown';
-  if(!rows.length){box.innerHTML='<div class="valueEmpty">No model markets were generated. This normally means the competition does not have enough historical statistics available.</div>';return}
+  if(!rows.length){box.innerHTML='<div class="valueEmpty">No model markets could be calculated from the available team data. Try another date or competition.</div>';return}
   box.innerHTML=rows.map(x=>{
     const f=x.fixture,lg=valueMajor(f),price=x.price,ev=x.ev;
-    const status=price?(ev>=min?'VALUE +'+ev.toFixed(1)+'%':ev>=0?'Positive EV below filter':'No value at best price'):'Price unavailable';
+    const status=price?(ev>=min?'VALUE +'+ev.toFixed(1)+'%':ev>=0?'Positive EV below filter':'Compare price'):'Odds optional';
     const cls=price?(ev>=min?'':'warn'):'gray';
-    return `<article class="valueCard"><div class="valueCardHead"><div><div class="valueFixture">${valueEsc(f.teams?.home?.name)} vs ${valueEsc(f.teams?.away?.name)}</div><div class="valueLeague">${valueEsc(lg?.name||f.league?.name||'Competition')} · ${new Date(f.fixture.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div></div><div class="valueScore">${x.score}/100</div></div><div class="valueMarket">${valueEsc(x.market)} <span class="valueBadge ${cls}">${status}</span></div><div class="valueRows"><div class="valueMini"><span>Model probability</span><b>${valuePct(x.p)}</b></div><div class="valueMini"><span>Fair odds</span><b>${x.fair?.toFixed(2)||'—'}</b></div><div class="valueMini"><span>Best bookmaker</span><b>${valueEsc(price?.bookmaker||'—')}</b></div><div class="valueMini"><span>Bookmaker odds</span><b>${price?.odd?.toFixed(2)||'—'}</b></div><div class="valueMini"><span>EV</span><b>${ev!=null?(ev.toFixed(1)+'%'):'—'}</b></div></div><div class="valueReason">${valueEsc(x.reason)} ${x.safer?`Safer line: <b>${valueEsc(x.safer)}</b>.`:''} ${price?`Best available price: <b>${price.odd.toFixed(2)}</b> at ${valueEsc(price.bookmaker)}.`:'No matching pre-match bookmaker price was returned for this market.'}</div></article>`
+    return `<article class="valueCard"><div class="valueCardHead"><div><div class="valueFixture">${valueEsc(f.teams?.home?.name)} vs ${valueEsc(f.teams?.away?.name)}</div><div class="valueLeague">${valueEsc(lg?.name||f.league?.name||'Competition')} · ${new Date(f.fixture.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div></div><div class="valueScore">${x.score}/100</div></div><div class="valueMarket">${valueEsc(x.market)} <span class="valueBadge ${cls}">${status}</span></div><div class="valueRows"><div class="valueMini"><span>Model probability</span><b>${valuePct(x.p)}</b></div><div class="valueMini"><span>Fair odds</span><b>${x.fair?.toFixed(2)||'—'}</b></div><div class="valueMini"><span>Bookmaker</span><b>${valueEsc(price?.bookmaker||'Not needed')}</b></div><div class="valueMini"><span>Bookmaker odds</span><b>${price?.odd?.toFixed(2)||'—'}</b></div><div class="valueMini"><span>EV</span><b>${ev!=null?(ev.toFixed(1)+'%'):'Check your price'}</b></div></div><div class="valueReason">${valueEsc(x.reason)} ${x.safer?`Safer line: <b>${valueEsc(x.safer)}</b>.`:''} ${price?`Best available price: <b>${price.odd.toFixed(2)}</b> at ${valueEsc(price.bookmaker)}.`:`No bookmaker price is required — compare your bookmaker's odds against the model fair odds of <b>${x.fair?.toFixed(2)||'—'}</b>.`}</div></article>`
   }).join('');
 }
 
