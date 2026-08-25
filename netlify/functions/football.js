@@ -41,24 +41,41 @@ exports.handler = async (event) => {
       return json(200, data);
     }
 
-    if (action === 'team_last5') {
+    if (action === 'status') {
+      const data = await api('/status');
+      return json(200, { plan: data?.response?.subscription?.plan || 'unknown' });
+    }
+
+    if (action === 'team_form') {
       const team = Number(p.team);
+      const requestedSeason = Number(p.season) || new Date().getUTCFullYear();
+      const count = Math.min(20, Math.max(5, Number(p.count) || 20));
       if (!team) return json(400, { error: 'Missing team id.' });
-      try {
-        const data = await api(`/fixtures?team=${team}&last=5`);
-        return json(200, data);
-      } catch (err) {
-        // Free plans can reject the `last` parameter. Fall back to a bounded
-        // date range and take the latest five completed fixtures client-side.
-        const to = new Date().toISOString().slice(0,10);
-        const from = daysAgo(to, 120);
-        const data = await api(`/fixtures?team=${team}&from=${from}&to=${to}`);
-        const completed = (data.response || [])
-          .filter(x => ['FT','AET','PEN'].includes(x?.fixture?.status?.short))
-          .sort((a,b) => new Date(b.fixture.date) - new Date(a.fixture.date))
-          .slice(0,5);
-        return json(200, { ...data, response: completed, _fallback: true });
+
+      // Prefer the current season. On the free plan, current/new seasons can be
+      // outside the historical window, so fall back to 2024 (then 2023/2022).
+      // We return the season actually used so the UI can be transparent.
+      const seasons = [requestedSeason, 2024, 2023, 2022].filter((x, i, a) => x >= 2000 && a.indexOf(x) === i);
+      let lastError = null;
+      for (const season of seasons) {
+        try {
+          const data = await api(`/fixtures?team=${team}&season=${season}&status=FT-AET-PEN`);
+          const completed = (data.response || [])
+            .filter(x => ['FT','AET','PEN'].includes(x?.fixture?.status?.short))
+            .sort((a,b) => new Date(b.fixture.date) - new Date(a.fixture.date))
+            .slice(0, count);
+          if (completed.length) return json(200, { ...data, response: completed, _seasonUsed: season, _fallback: season !== requestedSeason });
+          lastError = new Error(`No completed fixtures found for season ${season}.`);
+        } catch (err) { lastError = err; }
       }
+      throw lastError || new Error('No historical fixtures available for this team.');
+    }
+
+    if (action === 'fixtures_batch') {
+      const raw = String(p.ids || '').split('-').map(Number).filter(Boolean);
+      if (!raw.length) return json(400, { error: 'Missing fixture ids.' });
+      if (raw.length > 20) return json(400, { error: 'A maximum of 20 fixture ids can be requested at once.' });
+      return json(200, await api(`/fixtures?ids=${raw.join('-')}`));
     }
 
     if (action === 'stats') {
