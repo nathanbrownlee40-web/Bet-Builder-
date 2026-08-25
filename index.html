@@ -824,7 +824,12 @@ function fairOdds(p){return p>0?1/p:null}
 function ev(p,odds){return p&&odds?(p*odds-1):null}
 function normTeam(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'')}
 function teamMatch(a,b){a=normTeam(a);b=normTeam(b);return a===b||a.includes(b)||b.includes(a)}
-async function findTeamHistory(teamId){return Vfetch('/.netlify/functions/football-api?path=fixtures&team='+teamId+'&last=20&status=FT');}
+async function findTeamHistory(teamId){
+  // API-Football supports team + last directly; don't combine last with status.
+  // Filter to completed matches client-side so leagues with AET/PEN are retained.
+  const arr=await Vfetch('/.netlify/functions/football-api?path=fixtures&team='+encodeURIComponent(teamId)+'&last=20');
+  return (arr||[]).filter(x=>['FT','AET','PEN'].includes(x?.fixture?.status?.short));
+}
 async function getOdds(fixtureId){try{return await Vfetch('/.netlify/functions/football-api?path=odds&fixture='+fixtureId);}catch(e){return []}}
 function parseOdds(odds){
  const out={};
@@ -844,7 +849,7 @@ async function runValueScan(){
  VALUE_STATE.date=document.getElementById('valueDate').value;VALUE_STATE.running=true;VALUE_STATE.results=[];VALUE_STATE.statsCalls=0;renderValue();
  try{
   const fx=await Vfetch('/.netlify/functions/football-api?path=fixtures&date='+encodeURIComponent(VALUE_STATE.date)+'&status=NS');
-  VALUE_STATE.fixtures=fx.slice(0,20);
+  VALUE_STATE.fixtures=Array.from(new Map((fx||[]).map(x=>[x.fixture?.id,x])).values()).slice(0,20);
   for(let i=0;i<VALUE_STATE.fixtures.length;i++){
    const f=VALUE_STATE.fixtures[i]; renderValueProgress(i+1,VALUE_STATE.fixtures.length);
    try{
@@ -877,7 +882,7 @@ function renderValueResults(){
   html+=`<div class="valueCard ${badge==='hot'?'hot':''}"><div class="valueTop"><div><div class="valueTitle">${x.fixture.teams.home.name} vs ${x.fixture.teams.away.name}</div><div class="valueMeta">${x.fixture.league?.name||''} · ${new Date(x.fixture.fixture.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div></div><span class="valueBadge ${badge}">${evp>=10?'🔥 STRONG VALUE':evp>=5?'🟢 VALUE':'🟡 SMALL EDGE'}</span></div>
   <div class="marketList"><div class="marketRowV"><div class="line"><b>${x.market}</b><b>Model ${(x.p*100).toFixed(1)}%</b></div><div class="valueNumbers"><div class="valueNum"><span>Fair odds</span><b>${fair?.toFixed(2)||'—'}</b></div><div class="valueNum"><span>Bookmaker best</span><b>${x.odds?.toFixed(2)||'Not available'}</b></div><div class="valueNum"><span>EV</span><b>${evp.toFixed(1)}%</b></div><div class="valueNum"><span>Look for</span><b>${(fair*1.05).toFixed(2)}</b></div></div><div class="tiny" style="margin-top:8px">If the bookmaker price is <b>higher than fair odds</b>, the model says the price is potentially favourable. The “look for” price adds a 5% buffer.</div></div></div></div>`;
  }
- html+='</div><div class="sectionHead"><h2>All scanned fixtures</h2></div><div class="card"><table class="valueTable"><tr><th>Fixture</th><th>Top model</th><th>Best EV</th></tr>'+VALUE_STATE.results.map(r=>{if(r.error)return `<tr><td>${r.fixture.teams.home.name} vs ${r.fixture.teams.away.name}</td><td colspan="2">Data error</td></tr>`;const m=r.markets.slice().sort((a,b)=>(b.ev??-9e9)-(a.ev??-9e9))[0];return `<tr><td>${r.fixture.teams.home.name} vs ${r.fixture.teams.away.name}</td><td>${m?.market||'—'}</td><td>${m?.ev!=null?(m.ev*100).toFixed(1)+'%':'—'}</td></tr>`}).join('')+'</table></div>';
+ html+='</div><div class="sectionHead"><h2>All scanned fixtures</h2></div><div class="card"><table class="valueTable"><tr><th>Fixture</th><th>Top model</th><th>Best EV</th></tr>'+VALUE_STATE.results.map(r=>{if(r.error)return `<tr><td>${r.fixture.teams.home.name} vs ${r.fixture.teams.away.name}</td><td colspan="2">Data error: ${String(r.error).replace(/[<>]/g,'')}</td></tr>`;const m=r.markets.slice().sort((a,b)=>(b.ev??-9e9)-(a.ev??-9e9))[0];return `<tr><td>${r.fixture.teams.home.name} vs ${r.fixture.teams.away.name}</td><td>${m?.market||'—'}</td><td>${m?.ev!=null?(m.ev*100).toFixed(1)+'%':'—'}</td></tr>`}).join('')+'</table></div>';
  return html;
 }
 
