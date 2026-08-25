@@ -875,26 +875,35 @@ function valueMarketRows(teamA,teamB){
   const a=teamA?.stats||{},b=teamB?.stats||{};
   const ag=valueNum(a.avgGoals),bg=valueNum(b.avgGoals), ac=valueNum(a.avgCorners),bc=valueNum(b.avgCorners), ar=valueNum(a.avgCards),br=valueNum(b.avgCards), as=valueNum(a.avgSOT),bs=valueNum(b.avgSOT);
   const out=[];
-  const add=(cat,market,p,reason,safer)=>{if(p==null||p<0.50)return;out.push({cat,market,p,reason,safer});};
+  const add=(cat,market,p,reason,safer)=>{if(p==null||!(p>0&&p<1))return;out.push({cat,market,p,reason,safer});};
   if(ag!=null&&bg!=null){
     const total=ag+bg;
+    add('goals','Over 0.5 Goals',poissonOver(total,0.5),`Poisson model using combined recent average of ${total.toFixed(2)} goals.`,`Over 1.5 Goals`);
     add('goals','Over 1.5 Goals',poissonOver(total,1.5),`Poisson model using combined recent average of ${total.toFixed(2)} goals.`,`Over 0.5 Goals`);
     add('goals','Over 2.5 Goals',poissonOver(total,2.5),`Poisson model using combined recent average of ${total.toFixed(2)} goals.`,`Over 1.5 Goals`);
+    add('goals','Under 2.5 Goals',1-poissonOver(total,2.5),`Poisson model using combined recent average of ${total.toFixed(2)} goals.`,`Under 3.5 Goals`);
+    add('goals','Under 3.5 Goals',1-poissonOver(total,3.5),`Poisson model using combined recent average of ${total.toFixed(2)} goals.`,`Under 4.5 Goals`);
   }
   if(ac!=null&&bc!=null){
     const total=ac+bc;
+    add('corners','Over 4.5 Corners',poissonOver(total,4.5),`Poisson model using combined recent average of ${total.toFixed(2)} corners.`,`Over 6.5 Corners`);
     add('corners','Over 6.5 Corners',poissonOver(total,6.5),`Poisson model using combined recent average of ${total.toFixed(2)} corners.`,`Over 4.5 Corners`);
     add('corners','Over 8.5 Corners',poissonOver(total,8.5),`Poisson model using combined recent average of ${total.toFixed(2)} corners.`,`Over 6.5 Corners`);
+    add('corners','Under 10.5 Corners',1-poissonOver(total,10.5),`Poisson model using combined recent average of ${total.toFixed(2)} corners.`,`Under 11.5 Corners`);
   }
   if(ar!=null&&br!=null){
     const total=ar+br;
+    add('cards','Over 1.5 Cards',poissonOver(total,1.5),`Poisson model using combined recent average of ${total.toFixed(2)} cards.`,`Over 2.5 Cards`);
     add('cards','Over 2.5 Cards',poissonOver(total,2.5),`Poisson model using combined recent average of ${total.toFixed(2)} cards.`,`Over 1.5 Cards`);
     add('cards','Over 3.5 Cards',poissonOver(total,3.5),`Poisson model using combined recent average of ${total.toFixed(2)} cards.`,`Over 2.5 Cards`);
+    add('cards','Under 4.5 Cards',1-poissonOver(total,4.5),`Poisson model using combined recent average of ${total.toFixed(2)} cards.`,`Under 5.5 Cards`);
   }
   if(as!=null&&bs!=null){
     const total=as+bs;
+    add('sot','Over 2.5 Shots on Target',poissonOver(total,2.5),`Poisson model using combined recent average of ${total.toFixed(2)} shots on target.`,`Over 4.5 Shots on Target`);
     add('sot','Over 4.5 Shots on Target',poissonOver(total,4.5),`Poisson model using combined recent average of ${total.toFixed(2)} shots on target.`,`Over 2.5 Shots on Target`);
     add('sot','Over 6.5 Shots on Target',poissonOver(total,6.5),`Poisson model using combined recent average of ${total.toFixed(2)} shots on target.`,`Over 4.5 Shots on Target`);
+    add('sot','Under 8.5 Shots on Target',1-poissonOver(total,8.5),`Poisson model using combined recent average of ${total.toFixed(2)} shots on target.`,`Under 9.5 Shots on Target`);
   }
   return out;
 }
@@ -932,7 +941,7 @@ async function scanValue(){
 
     VALUE_STATE.fixtures=unique.slice(0,20);
     const max=VALUE_STATE.fixtures;
-    if(status)status.textContent=`Found ${unique.length} major-league/cup fixtures. Building the model from historical form…`;
+    if(status)status.textContent=`Found ${unique.length} major-league/cup fixtures. Loading each team's latest completed matches…`;
 
     const teamIds=[...new Set(max.flatMap(f=>[valueTeamId(f.teams?.home),valueTeamId(f.teams?.away)]).filter(Boolean))];
     const teamForms=new Map();
@@ -1018,7 +1027,8 @@ async function scanValue(){
     VALUE_STATE.results=out.sort((x,y)=>y.score-x.score);
     renderValueResults();
     const modelCount=out.length;
-    if(status){status.className='valueStatus ok';status.textContent=`Scan complete: ${unique.length} major fixtures found, ${modelCount} model markets generated. Fair odds are shown without requiring bookmaker odds. ${isFreePlan?'Free-plan form uses the latest supported historical season (2024).':'Paid-plan form uses the current season.'}`}
+    const teamsLoaded=teamForms.size;
+    if(status){status.className='valueStatus ok';status.textContent=`Scan complete: ${unique.length} major fixtures found, ${modelCount} model markets generated from ${teamsLoaded}/${teamIds.length} teams. Fair odds are shown without requiring bookmaker odds.`}
   }catch(e){
     if(status){status.className='valueStatus err';status.textContent=e.message||'Scan failed.'}
     const box=document.getElementById('valueResults');if(box)box.innerHTML='<div class="valueNotice">'+valueEsc(e.message||'Unable to scan. Make sure the Netlify function has API_FOOTBALL_KEY configured.')+'</div>';

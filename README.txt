@@ -1,4 +1,4 @@
-TOP DAILY BUILDERS — VALUE SCANNER v22
+TOP DAILY BUILDERS — VALUE SCANNER v23
 
 WHAT CHANGED
 - Fixed the regression where the Value screen found fixtures but produced only “Data error” rows or no model markets.
@@ -29,3 +29,6 @@ API-Football currently lists the free plan as 100 requests/day and 10 requests/m
 
 IMPORTANT
 This is a quantitative screening model, not proof that a bet is profitable. A fair price is only as good as the data and calibration behind the probability.
+
+
+V23 FIX: team form now tries API-Football latest completed fixtures first, so free-plan season restrictions do not prevent the model from producing markets. Model markets are displayed without requiring bookmaker odds. Service-worker cache bumped to v23.
