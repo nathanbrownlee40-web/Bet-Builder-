@@ -55,8 +55,22 @@ exports.handler = async (event) => {
       // Prefer the current season. On the free plan, current/new seasons can be
       // outside the historical window, so fall back to 2024 (then 2023/2022).
       // We return the season actually used so the UI can be transparent.
-      const seasons = [requestedSeason, 2024, 2023, 2022].filter((x, i, a) => x >= 2000 && a.indexOf(x) === i);
       let lastError = null;
+
+      // First use the API's `last` fixture query. This is much more robust for
+      // free plans because it asks for the team's latest completed matches
+      // without forcing a season that the plan may not expose.
+      try {
+        const data = await api(`/fixtures?team=${team}&last=${count}`);
+        const completed = (data.response || [])
+          .filter(x => ['FT','AET','PEN'].includes(x?.fixture?.status?.short))
+          .sort((a,b) => new Date(b.fixture.date) - new Date(a.fixture.date))
+          .slice(0, count);
+        if (completed.length) return json(200, { ...data, response: completed, _seasonUsed: 'latest', _fallback: false });
+      } catch (err) { lastError = err; }
+
+      // Fallback for plans/competitions where the `last` query is restricted.
+      const seasons = [requestedSeason, 2024, 2023, 2022].filter((x, i, a) => x >= 2000 && a.indexOf(x) === i);
       for (const season of seasons) {
         try {
           const data = await api(`/fixtures?team=${team}&season=${season}&status=FT-AET-PEN`);
