@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta name="tdb-version" content="v18-live-bet-and-clear-stats">
+<meta name="tdb-version" content="v19-value-scanner-major-fixtures">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f172a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Top Daily Builders + Tracker"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.json"><link rel="icon" type="image/png" sizes="512x512" href="icon-512x512.png"><link rel="apple-touch-icon" sizes="192x192" href="icon-192x192.png">
@@ -91,8 +91,6 @@ body.statsMode .periodSelect option{background:#0e1a29;color:#fff}
 
 .toggleButton{border:0;background:transparent;padding:0;margin:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex:0 0 28px}.toggleButton .toggleIcon{display:block}.builder.collapsed .builderDetails{display:none}.builderHead{cursor:pointer}.builderHead .builderToggle{display:flex;align-items:center;gap:8px}.toggleIcon{font-size:18px;font-weight:900;color:#64748b;width:20px}.builderNumber{font-size:18px;font-weight:850}.builderCode{font-size:11px;color:#64748b;margin-top:2px}.builderDetails{border-top:1px solid rgba(148,163,184,.22)}.builder.open .builderDetails{display:block}.builder.open .builderHead{padding-bottom:13px}.builder.open .builderToggle .toggleIcon{transform:rotate(90deg)}
 .headActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.viewOnlyBanner{background:#ecfdf5;border:1px solid #86efac;color:#166534;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-weight:800;font-size:13px;text-align:center}
-
-.valueGrid{display:grid;gap:10px}.valueCard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow)}.valueCard.hot{border-color:#86efac;background:#f0fdf4}.valueTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.valueTitle{font-weight:850}.valueMeta{font-size:12px;color:var(--muted);margin-top:3px}.valueNumbers{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}.valueNum{background:#f8fafc;border-radius:12px;padding:9px}.valueNum span{display:block;color:var(--muted);font-size:11px}.valueNum b{font-size:17px}.valueBadge{padding:6px 9px;border-radius:999px;font-size:11px;font-weight:850;background:#e2e8f0}.valueBadge.hot{background:#bbf7d0;color:#166534}.valueBadge.good{background:#dcfce7;color:#166534}.valueBadge.warn{background:#fef3c7;color:#92400e}.valueBadge.none{background:#e2e8f0;color:#475569}.marketList{display:grid;gap:8px;margin-top:10px}.marketRowV{border:1px solid var(--line);border-radius:13px;padding:10px}.marketRowV .line{display:flex;justify-content:space-between;gap:8px}.tiny{font-size:11px;color:var(--muted)}.valueControls{display:grid;gap:10px}.valueControls .field{margin:0}.valueTable{width:100%;border-collapse:collapse;font-size:12px}.valueTable th,.valueTable td{padding:8px;border-bottom:1px solid var(--line);text-align:left}.valueTable th{color:var(--muted);font-size:11px}.oddsInput{width:90px;padding:7px;border:1px solid var(--line);border-radius:9px}.valueInfo{font-size:12px;line-height:1.5;color:#475569}.valueWarn{background:#fff7ed;border:1px solid #fdba74;color:#9a3412;border-radius:12px;padding:10px;font-size:12px}.valueGood{background:#f0fdf4;border:1px solid #86efac;color:#166534;border-radius:12px;padding:10px;font-size:12px}
 </style>
 <style>
 .bb-top-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
@@ -111,6 +109,20 @@ body.statsMode .periodSelect option{background:#0e1a29;color:#fff}
   .builder.win{background:#f0fdf4}.builder.loss{background:#fff1f2}
 }
 </style>
+
+<style id="value-scanner-styles">
+.valueHero{background:linear-gradient(145deg,#0f172a,#172554);color:#fff;border-radius:22px;padding:18px;margin-bottom:14px;box-shadow:0 12px 28px rgba(15,23,42,.16)}
+.valueHero h2{margin:0 0 6px;font-size:22px}.valueHero p{margin:0;color:#cbd5e1;font-size:12px;line-height:1.5}
+.valueControls{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px;box-shadow:var(--shadow);display:grid;gap:12px}
+.valueGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.valueGrid .field{min-width:0}
+.valueStatus{font-size:12px;color:#64748b;line-height:1.45}.valueStatus.ok{color:#166534}.valueStatus.err{color:#991b1b}
+.valueNotice{background:#fff7ed;border:1px solid #fdba74;color:#9a3412;border-radius:14px;padding:11px;font-size:12px;line-height:1.45}
+.valueFilters{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.valuePill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800}.valuePill.active{background:#0f172a;color:#fff}
+.valueResults{display:grid;gap:10px}.valueCard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow)}
+.valueCardHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.valueFixture{font-weight:900;font-size:16px}.valueLeague{font-size:11px;color:#64748b;margin-top:3px}.valueScore{font-size:18px;font-weight:900;background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:12px;padding:8px 10px;white-space:nowrap}.valueMarket{margin-top:10px;font-weight:900;font-size:15px}.valueRows{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.valueMini{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:9px;min-width:0}.valueMini span{display:block;color:#64748b;font-size:10px}.valueMini b{display:block;margin-top:3px;font-size:15px}.valueReason{margin-top:9px;font-size:11px;color:#475569;line-height:1.45}.valueBadge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900;background:#dcfce7;color:#166534}.valueBadge.warn{background:#ffedd5;color:#9a3412}.valueBadge.gray{background:#e2e8f0;color:#475569}
+.valueEmpty{padding:24px;text-align:center;color:#64748b;background:#fff;border:1px dashed var(--line);border-radius:16px}
+@media(max-width:520px){.valueGrid{grid-template-columns:1fr}.valueRows{grid-template-columns:1fr 1fr 1fr}.valueCardHead{gap:7px}.valueScore{font-size:16px;padding:7px 8px}}
+</style>
 </head>
 <body>
 <div class="app"><header class="top">
@@ -119,7 +131,7 @@ body.statsMode .periodSelect option{background:#0e1a29;color:#fff}
 <section id="dashboard" class="screen active"></section>
 <section id="live" class="screen"></section>
 <section id="builders" class="screen"></section>
-<section id="add" class="screen"></section><section id="stats" class="screen"></section><section id="value" class="screen"></section></section>
+<section id="value" class="screen"></section><section id="add" class="screen"></section><section id="stats" class="screen"></section>
 </main></div><div class="bottom"><nav class="nav"><button data-screen="dashboard" class="active">🏠<small>Dashboard</small></button><button data-screen="live">🔴<small>Live & Upcoming</small></button><button data-screen="builders">⚽<small>Builder Results</small></button><button data-screen="stats">📊<small>TDB Stats</small></button><button data-screen="value">💰<small>Value</small></button><button data-screen="add">➕<small>Add Bet</small></button></nav></div><div id="toast" class="toast"></div>
 <script>
 // Keep hosting/preview badges from covering the app navigation in installed copies.
@@ -801,100 +813,124 @@ function renderStats(){
 }
 
 
-// ===== Value Scanner =====
-const VALUE_STATE={key:'server', date:new Date().toISOString().slice(0,10), fixtures:[], results:[], running:false, statsCalls:0, maxStatsCalls:35};
-const Vfetch=async (url)=>{const r=await fetch(url);if(!r.ok)throw new Error('API '+r.status);const j=await r.json();if(j.errors&&Object.keys(j.errors).length)throw new Error(Object.values(j.errors).join(', '));return j.response||[]};
-const Vnum=x=>typeof x==='number'?x:(x==null?null:parseFloat(String(x).replace(/[^0-9.-]/g,'')));
-const Vclamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-function poisson(lambda,k){if(lambda<=0)return k===0?1:0;let p=Math.exp(-lambda);for(let i=1;i<=k;i++)p*=lambda/i;return p}
-function poissonOver(lambda,line){const k=Math.floor(line);let s=0;for(let i=0;i<=k;i++)s+=poisson(lambda,i);return 1-s}
-function modelFor(home,away){
- const h=home.form||[], a=away.form||[];
- const avg=arr=>arr.length?arr.reduce((s,x)=>s+x,0)/arr.length:1.25;
- const hGF=avg(h.map(x=>x.gf)),hGA=avg(h.map(x=>x.ga)),aGF=avg(a.map(x=>x.gf)),aGA=avg(a.map(x=>x.ga));
- const hHome=h.filter(x=>x.home).slice(0,10),aAway=a.filter(x=>!x.home).slice(0,10);
- const hhGF=avg(hHome.map(x=>x.gf)),hhGA=avg(hHome.map(x=>x.ga)),aaGF=avg(aAway.map(x=>x.gf)),aaGA=avg(aAway.map(x=>x.ga));
- const baseHome=Vclamp((hhGF*.55+aGA*.45)*1.05,.25,4),baseAway=Vclamp((aaGF*.55+hGA*.45)*.95,.15,3.5);
- const lambda=baseHome+baseAway;
- const over15=poissonOver(lambda,1.5),over25=poissonOver(lambda,2.5),over35=poissonOver(lambda,3.5);
- const p0h=poisson(baseHome,0),p0a=poisson(baseAway,0),btts=1-p0h-p0a+p0h*p0a;
- return {xgH:baseHome,xgA:baseAway,lambda,markets:[['Over 1.5 Goals',over15],['Over 2.5 Goals',over25],['Over 3.5 Goals',over35],['BTTS — Yes',btts]],dataN:h.length+a.length};
+const VALUE_MAJOR_LEAGUES=[
+  {id:39,name:'Premier League',type:'League',country:'England',priority:100},
+  {id:40,name:'Championship',type:'League',country:'England',priority:90},
+  {id:45,name:'FA Cup',type:'Cup',country:'England',priority:85},
+  {id:48,name:'EFL Cup',type:'Cup',country:'England',priority:85},
+  {id:140,name:'LaLiga',type:'League',country:'Spain',priority:100},
+  {id:143,name:'Copa del Rey',type:'Cup',country:'Spain',priority:85},
+  {id:78,name:'Bundesliga',type:'League',country:'Germany',priority:100},
+  {id:81,name:'DFB Pokal',type:'Cup',country:'Germany',priority:85},
+  {id:135,name:'Serie A',type:'League',country:'Italy',priority:100},
+  {id:137,name:'Coppa Italia',type:'Cup',country:'Italy',priority:85},
+  {id:61,name:'Ligue 1',type:'League',country:'France',priority:100},
+  {id:66,name:'Coupe de France',type:'Cup',country:'France',priority:85},
+  {id:2,name:'UEFA Champions League',type:'Cup',country:'Europe',priority:110},
+  {id:3,name:'UEFA Europa League',type:'Cup',country:'Europe',priority:105},
+  {id:848,name:'UEFA Conference League',type:'Cup',country:'Europe',priority:100},
+  {id:253,name:'MLS',type:'League',country:'USA',priority:75},
+  {id:71,name:'Serie A Brazil',type:'League',country:'Brazil',priority:75},
+  {id:72,name:'Serie B Brazil',type:'League',country:'Brazil',priority:55},
+  {id:128,name:'Liga Profesional Argentina',type:'League',country:'Argentina',priority:70},
+  {id:239,name:'Liga BetPlay',type:'League',country:'Colombia',priority:65},
+  {id:88,name:'Eredivisie',type:'League',country:'Netherlands',priority:75},
+  {id:94,name:'Primeira Liga',type:'League',country:'Portugal',priority:75},
+  {id:179,name:'Scottish Premiership',type:'League',country:'Scotland',priority:70},
+  {id:262,name:'Liga MX',type:'League',country:'Mexico',priority:70},
+  {id:13,name:'Copa Libertadores',type:'Cup',country:'South America',priority:85},
+  {id:11,name:'Copa Sudamericana',type:'Cup',country:'South America',priority:75},
+  {id:307,name:'Saudi Pro League',type:'League',country:'Saudi-Arabia',priority:65},
+  {id:98,name:'J1 League',type:'League',country:'Japan',priority:60},
+];
+const VALUE_STATE={date:new Date().toISOString().slice(0,10),minEV:5,filter:'all',results:[],loading:false};
+function valueEsc(x){return String(x??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+function valueNum(x){const n=Number(x);return Number.isFinite(n)?n:null}
+function valuePct(p){return p==null?'—':`${Math.round(p*100)}%`}
+function valueFair(p){return p>0?Math.round((1/p)*100)/100:null}
+function valueEv(p,odds){return p!=null&&odds>1?((p*odds-1)*100):null}
+function valueMajor(f){return VALUE_MAJOR_LEAGUES.find(x=>Number(x.id)===Number(f?.league?.id))||null}
+function valueTeamId(t){return Number(t?.id)||null}
+function valueStat(statistics,name){const x=(statistics||[]).find(s=>String(s.type).toLowerCase()===name.toLowerCase());return valueNum(String(x?.value??'').replace('%',''))}
+function valueFixtureDate(){return document.getElementById('valueDate')?.value||VALUE_STATE.date}
+function renderValue(){
+  const el=document.getElementById('value'); if(!el)return;
+  el.innerHTML=`<div class="valueHero"><h2>💰 Value Scanner</h2><p>Major leagues & cups first. The scanner gets fixtures by date, then models goals, corners, cards and shots on target from available match statistics. A value flag only appears when the model probability beats the supplied bookmaker price.</p></div>
+  <div class="valueControls"><div class="valueGrid"><div class="field"><label>Fixture date</label><input id="valueDate" type="date" value="${valueEsc(VALUE_STATE.date)}"></div><div class="field"><label>Minimum EV to show (%)</label><input id="valueMinEV" type="number" min="0" step="1" value="${VALUE_STATE.minEV}"></div></div>
+  <div class="field"><label>Bookmaker odds (optional)</label><input id="valueOdds" placeholder="e.g. 1.85 — used to confirm real price value"></div>
+  <div class="hint">If no current bookmaker price is supplied, the app can rank model opportunities but will label them <b>price required</b> rather than pretending they are confirmed value bets.</div>
+  <div class="actions"><button class="btn primary" id="valueScanBtn">🔎 Scan major leagues & cups</button></div><div id="valueStatus" class="valueStatus"></div></div>
+  <div class="sectionHead"><h2>Top opportunities</h2><span class="small" id="valueCount">0 shown</span></div><div class="valueFilters"><button class="valuePill active" data-vfilter="all">All</button><button class="valuePill" data-vfilter="goals">⚽ Goals</button><button class="valuePill" data-vfilter="corners">🚩 Corners</button><button class="valuePill" data-vfilter="cards">🟨 Cards</button><button class="valuePill" data-vfilter="sot">🎯 Shots on Target</button></div><div id="valueResults" class="valueResults"><div class="valueEmpty">Choose a date and scan. Major leagues and cups will be prioritised instead of youth/reserve fixtures.</div></div>`;
+  document.getElementById('valueScanBtn').onclick=scanValue;
+  document.getElementById('valueDate').onchange=e=>VALUE_STATE.date=e.target.value;
+  document.getElementById('valueMinEV').onchange=e=>VALUE_STATE.minEV=valueNum(e.target.value)||5;
+  document.querySelectorAll('[data-vfilter]').forEach(b=>b.onclick=()=>{VALUE_STATE.filter=b.dataset.vfilter;document.querySelectorAll('[data-vfilter]').forEach(x=>x.classList.toggle('active',x===b));renderValueResults();});
 }
-function fairOdds(p){return p>0?1/p:null}
-function ev(p,odds){return p&&odds?(p*odds-1):null}
-function normTeam(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'')}
-function teamMatch(a,b){a=normTeam(a);b=normTeam(b);return a===b||a.includes(b)||b.includes(a)}
-const VALUE_HISTORY_CACHE=new Map();
-async function findTeamHistory(teamId, beforeDate){
-  const season=new Date(beforeDate||VALUE_STATE.date+'T23:59:59Z').getUTCFullYear();
-  const cacheKey=String(teamId)+'|'+season;
-  if(VALUE_HISTORY_CACHE.has(cacheKey)) return VALUE_HISTORY_CACHE.get(cacheKey).filter(x=>new Date(x.fixture?.date||0)<new Date(beforeDate||'9999-12-31T23:59:59Z'));
-  // The Free API-Football plan rejects the `last` parameter. Use the team's
-  // current-season fixture list instead, then keep only completed matches
-  // before the upcoming fixture. This uses a supported free-plan filter.
-  const arr=await Vfetch('/.netlify/functions/football-api?path=fixtures&team='+encodeURIComponent(teamId)+'&season='+encodeURIComponent(season));
-  const completed=(arr||[]).filter(x=>['FT','AET','PEN'].includes(x?.fixture?.status?.short));
-  completed.sort((a,b)=>new Date(b.fixture?.date||0)-new Date(a.fixture?.date||0));
-  VALUE_HISTORY_CACHE.set(cacheKey,completed);
-  return completed.filter(x=>new Date(x.fixture?.date||0)<new Date(beforeDate||'9999-12-31T23:59:59Z')).slice(0,20);
+function poissonOver(lambda,line){
+  if(!(lambda>0))return null;
+  const k=Math.floor(line)+1;
+  let term=Math.exp(-lambda), sum=term;
+  for(let i=1;i<k;i++){term*=lambda/i;sum+=term}
+  return Math.min(.995,Math.max(.005,1-sum));
 }
-async function getOdds(fixtureId){try{return await Vfetch('/.netlify/functions/football-api?path=odds&fixture='+fixtureId);}catch(e){return []}}
-function parseOdds(odds){
- const out={};
- for(const book of odds||[]){for(const bet of (book.bets||[])){
-  const name=String(bet.name||'').toLowerCase();
-  if(!/goals|both teams to score|btts/.test(name))continue;
-  for(const v of (bet.values||[])){const odd=Vnum(v.odd),value=String(v.value||''); if(!odd)continue;
-   if(/over 1\.5/.test(value.toLowerCase()))out['Over 1.5 Goals']=Math.max(out['Over 1.5 Goals']||0,odd);
-   if(/over 2\.5/.test(value.toLowerCase()))out['Over 2.5 Goals']=Math.max(out['Over 2.5 Goals']||0,odd);
-   if(/over 3\.5/.test(value.toLowerCase()))out['Over 3.5 Goals']=Math.max(out['Over 3.5 Goals']||0,odd);
-   if(/yes/i.test(value)&&/both|btts/.test(name))out['BTTS — Yes']=Math.max(out['BTTS — Yes']||0,odd);
+function valueMarketRows(teamA,teamB){
+  const a=teamA?.stats||{},b=teamB?.stats||{};
+  const ag=valueNum(a.avgGoals),bg=valueNum(b.avgGoals), ac=valueNum(a.avgCorners),bc=valueNum(b.avgCorners), ar=valueNum(a.avgCards),br=valueNum(b.avgCards), as=valueNum(a.avgSOT),bs=valueNum(b.avgSOT);
+  const out=[];
+  const add=(cat,market,p,reason,safer)=>{if(p==null||p<0.50)return;out.push({cat,market,p,reason,safer});};
+  if(ag!=null&&bg!=null){
+    const total=ag+bg;
+    add('goals','Over 1.5 Goals',poissonOver(total,1.5),`Poisson model using combined recent average of ${total.toFixed(2)} goals.`,`Over 0.5 Goals`);
+    add('goals','Over 2.5 Goals',poissonOver(total,2.5),`Poisson model using combined recent average of ${total.toFixed(2)} goals.`,`Over 1.5 Goals`);
   }
- }} return out;
-}
-async function runValueScan(){
- 
- VALUE_STATE.date=document.getElementById('valueDate').value;VALUE_STATE.running=true;VALUE_STATE.results=[];VALUE_STATE.statsCalls=0;VALUE_HISTORY_CACHE.clear();renderValue();
- try{
-  const fx=await Vfetch('/.netlify/functions/football-api?path=fixtures&date='+encodeURIComponent(VALUE_STATE.date)+'&status=NS');
-  VALUE_STATE.fixtures=Array.from(new Map((fx||[]).map(x=>[x.fixture?.id,x])).values()).slice(0,20);
-  for(let i=0;i<VALUE_STATE.fixtures.length;i++){
-   const f=VALUE_STATE.fixtures[i]; renderValueProgress(i+1,VALUE_STATE.fixtures.length);
-   try{
-    const [hf,af,od]=await Promise.all([findTeamHistory(f.teams.home.id,f.fixture.date),findTeamHistory(f.teams.away.id,f.fixture.date),getOdds(f.fixture.id)]);
-    const form=arr=>arr.map(x=>({gf:Vnum(x.goals?.for)||0,ga:Vnum(x.goals?.against)||0,home:x.teams?.home?.id===f.teams.home.id}));
-    const h={form:form(hf)},a={form:form(af)};const model=modelFor(h,a);const odds=parseOdds(od);
-    const markets=model.markets.map(([market,p])=>{const o=odds[market]||null;const fair=fairOdds(p),e=ev(p,o);return {market,p,odds:o,fair,ev:e,threshold:fair?fair*1.05:null};}).sort((x,y)=>(y.ev??-999)-(x.ev??-999));
-    VALUE_STATE.results.push({fixture:f,model,markets});
-   }catch(e){VALUE_STATE.results.push({fixture:f,error:e.message})}
+  if(ac!=null&&bc!=null){
+    const total=ac+bc;
+    add('corners','Over 6.5 Corners',poissonOver(total,6.5),`Poisson model using combined recent average of ${total.toFixed(2)} corners.`,`Over 4.5 Corners`);
+    add('corners','Over 8.5 Corners',poissonOver(total,8.5),`Poisson model using combined recent average of ${total.toFixed(2)} corners.`,`Over 6.5 Corners`);
   }
- }catch(e){toast(e.message||'Value scan failed')}
- VALUE_STATE.running=false;renderValue();
+  if(ar!=null&&br!=null){
+    const total=ar+br;
+    add('cards','Over 2.5 Cards',poissonOver(total,2.5),`Poisson model using combined recent average of ${total.toFixed(2)} cards.`,`Over 1.5 Cards`);
+    add('cards','Over 3.5 Cards',poissonOver(total,3.5),`Poisson model using combined recent average of ${total.toFixed(2)} cards.`,`Over 2.5 Cards`);
+  }
+  if(as!=null&&bs!=null){
+    const total=as+bs;
+    add('sot','Over 4.5 Shots on Target',poissonOver(total,4.5),`Poisson model using combined recent average of ${total.toFixed(2)} shots on target.`,`Over 2.5 Shots on Target`);
+    add('sot','Over 6.5 Shots on Target',poissonOver(total,6.5),`Poisson model using combined recent average of ${total.toFixed(2)} shots on target.`,`Over 4.5 Shots on Target`);
+  }
+  return out;
 }
-function renderValueProgress(done,total){const el=document.getElementById('valueProgress');if(el)el.textContent='Analysing '+done+' of '+total+' fixtures…'}
-function renderValue(){const root=document.getElementById('value');if(!root)return;root.innerHTML=`<div class="sectionHead"><div><h2>💰 Value Scanner</h2><div class="hint">Modelled probabilities first, bookmaker price second. It does not call a bet “value” unless the price beats the model's fair price.</div></div></div>
- <div class="card"><div class="valueControls"><div class="field"><label>API-Football connection</label><div class="hint">🔐 Secure server connection — API key is stored in Netlify, not in this app.</div></div><div class="marketRow"><div class="field"><label>Fixture date</label><input id="valueDate" type="date" value="${VALUE_STATE.date}"></div><div class="field"><label>Minimum EV to show</label><input id="valueMinEv" type="number" step="0.1" value="5"></div></div><button class="btn primary" id="runValue">${VALUE_STATE.running?'Scanning…':'🔎 Scan for value'}</button><div id="valueProgress" class="hint">${VALUE_STATE.running?'Starting scan…':VALUE_STATE.results.length?VALUE_STATE.results.length+' fixtures analysed.':'The model uses up to 20 completed current-season matches where available and compares model probabilities with bookmaker prices. API access is secured server-side.'}</div></div></div>
- <div class="valueWarn">⚠️ A positive EV result is a <b>modelled value candidate</b>, not proof of profit. The app must be backtested/calibrated before treating the model probability as trustworthy.</div>
- ${renderValueResults()}`;
- document.getElementById('runValue').onclick=runValueScan;
+async function valueApi(path){const r=await fetch('/.netlify/functions/football'+path);let d={};try{d=await r.json()}catch{}if(!r.ok)throw new Error(d?.error||'Football data request failed');return d;}
+async function scanValue(){
+  if(VALUE_STATE.loading)return;VALUE_STATE.loading=true;VALUE_STATE.results=[];const status=document.getElementById('valueStatus');if(status){status.className='valueStatus';status.textContent='Loading fixtures for '+valueFixtureDate()+'…'}
+  try{
+    const data=await valueApi('?action=fixtures&date='+encodeURIComponent(valueFixtureDate()));
+    const fixtures=(data.response||[]).filter(f=>f?.fixture?.status?.short==='NS'||f?.fixture?.status?.short==='TBD').filter(f=>valueMajor(f));
+    const unique=[];const seen=new Set();for(const f of fixtures){const k=f.fixture.id;if(!seen.has(k)){seen.add(k);unique.push(f)}}
+    unique.sort((a,b)=>(valueMajor(b).priority-valueMajor(a).priority)||new Date(a.fixture.date)-new Date(b.fixture.date));
+    if(status)status.textContent=`Found ${unique.length} major-league/cup fixtures. Analysing available recent data…`;
+    const out=[];const max=unique.slice(0,30);
+    for(let i=0;i<max.length;i++){
+      const f=max[i], a=valueTeamId(f.teams.home), b=valueTeamId(f.teams.away);if(!a||!b)continue;
+      try{
+        const [ra,rb]=await Promise.all([valueApi('?action=team_last5&team='+a),valueApi('?action=team_last5&team='+b)]);
+        const pack=(d)=>{const fs=d.response||[];const stats=[];return {stats:stats,fixtures:fs}};
+        const pa=pack(ra),pb=pack(rb);
+        const avgs=async(p)=>{let goals=0,corners=0,cards=0,sot=0,n=0;for(const x of (p.fixtures||[])){const id=x.fixture?.id;if(!id)continue;try{const st=await valueApi('?action=stats&fixture='+id);const rows=st.response||[];const teamId=p.teamId;let teamRows=rows;let row=teamRows.find(r=>Number(r.team?.id)===Number(teamId));if(!row&&rows[0])row=rows[0];if(row){const isHome=Number(x.teams?.home?.id)===Number(p.teamId); const gf=isHome?x.goals?.home:x.goals?.away; goals+=Number(gf??0);corners+=valueStat(row.statistics,'Corner Kicks')||0;cards+=(valueStat(row.statistics,'Yellow Cards')||0)+(valueStat(row.statistics,'Red Cards')||0);sot+=valueStat(row.statistics,'Shots on Goal')||0;n++;}}catch(e){}}
+          return {avgGoals:n?goals/n:null,avgCorners:n?corners/n:null,avgCards:n?cards/n:null,avgSOT:n?sot/n:null,n};};
+        pa.teamId=a;pb.teamId=b;const [sa,sb]=await Promise.all([avgs(pa),avgs(pb)]);pa.stats=sa;pb.stats=sb;
+        const markets=valueMarketRows({stats:sa},{stats:sb});
+        for(const m of markets){const score=Math.round(Math.min(99,Math.max(1,m.p*100)));out.push({fixture:f,cat:m.cat,market:m.market,p:m.p,score,reason:m.reason,safer:m.safer});}
+      }catch(e){console.warn('fixture analysis failed',f,e)}
+      if(status)status.textContent=`Analysed ${i+1}/${max.length} fixtures…`;
+    }
+    VALUE_STATE.results=out.sort((x,y)=>y.score-x.score);renderValueResults();if(status){status.className='valueStatus ok';status.textContent=`Scan complete: ${unique.length} major fixtures found, ${out.length} model opportunities generated. Bookmaker price is still required to confirm real EV/value.`}
+  }catch(e){if(status){status.className='valueStatus err';status.textContent=e.message||'Scan failed.'}document.getElementById('valueResults').innerHTML='<div class="valueNotice">'+valueEsc(e.message||'Unable to scan. Make sure the Netlify function has API_FOOTBALL_KEY configured.')+'</div>'}
+  finally{VALUE_STATE.loading=false}
 }
-function renderValueResults(){
- if(!VALUE_STATE.results.length)return '<div class="empty" style="margin-top:12px">No scan results yet.</div>';
- const min=(Vnum(document.getElementById('valueMinEv')?.value)||5)/100;
- const all=[];for(const r of VALUE_STATE.results){if(r.error)continue;for(const m of r.markets)if(m.ev!=null&&m.ev>=min)all.push({...m,fixture:r.fixture,model:r.model});}
- all.sort((a,b)=>b.ev-a.ev);
- let html='<div class="sectionHead"><div><h2>🔥 Best value candidates</h2><div class="hint">Sorted by model EV. “Look for” is the minimum price that gives the model at least a 5% cushion above fair odds.</div></div></div><div class="valueGrid">';
- if(!all.length)html+='<div class="empty">No markets currently meet the filter. That is OK — the scanner should not force a value bet.</div>';
- for(const x of all.slice(0,30)){
-  const evp=x.ev*100;const fair=x.fair;const badge=evp>=10?'hot':evp>=5?'good':'warn';
-  html+=`<div class="valueCard ${badge==='hot'?'hot':''}"><div class="valueTop"><div><div class="valueTitle">${x.fixture.teams.home.name} vs ${x.fixture.teams.away.name}</div><div class="valueMeta">${x.fixture.league?.name||''} · ${new Date(x.fixture.fixture.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div></div><span class="valueBadge ${badge}">${evp>=10?'🔥 STRONG VALUE':evp>=5?'🟢 VALUE':'🟡 SMALL EDGE'}</span></div>
-  <div class="marketList"><div class="marketRowV"><div class="line"><b>${x.market}</b><b>Model ${(x.p*100).toFixed(1)}%</b></div><div class="valueNumbers"><div class="valueNum"><span>Fair odds</span><b>${fair?.toFixed(2)||'—'}</b></div><div class="valueNum"><span>Bookmaker best</span><b>${x.odds?.toFixed(2)||'Not available'}</b></div><div class="valueNum"><span>EV</span><b>${evp.toFixed(1)}%</b></div><div class="valueNum"><span>Look for</span><b>${(fair*1.05).toFixed(2)}</b></div></div><div class="tiny" style="margin-top:8px">If the bookmaker price is <b>higher than fair odds</b>, the model says the price is potentially favourable. The “look for” price adds a 5% buffer.</div></div></div></div>`;
- }
- html+='</div><div class="sectionHead"><h2>All scanned fixtures</h2></div><div class="card"><table class="valueTable"><tr><th>Fixture</th><th>Top model</th><th>Best EV</th></tr>'+VALUE_STATE.results.map(r=>{if(r.error)return `<tr><td>${r.fixture.teams.home.name} vs ${r.fixture.teams.away.name}</td><td colspan="2">Data error: ${String(r.error).replace(/[<>]/g,'')}</td></tr>`;const m=r.markets.slice().sort((a,b)=>(b.ev??-9e9)-(a.ev??-9e9))[0];return `<tr><td>${r.fixture.teams.home.name} vs ${r.fixture.teams.away.name}</td><td>${m?.market||'—'}</td><td>${m?.ev!=null?(m.ev*100).toFixed(1)+'%':'—'}</td></tr>`}).join('')+'</table></div>';
- return html;
-}
+function renderValueResults(){const box=document.getElementById('valueResults');if(!box)return;let rows=VALUE_STATE.results.filter(x=>VALUE_STATE.filter==='all'||x.cat===VALUE_STATE.filter);const min=valueNum(document.getElementById('valueMinEV')?.value)||VALUE_STATE.minEV;const odds=valueNum(document.getElementById('valueOdds')?.value);rows=rows.map(x=>({...x,odds,ev:valueEv(x.p,odds),fair:valueFair(x.p)}));if(odds)rows=rows.filter(x=>x.ev!=null&&x.ev>=min);rows=rows.slice(0,50);const count=document.getElementById('valueCount');if(count)count.textContent=rows.length+' shown';if(!rows.length){box.innerHTML='<div class="valueEmpty">No opportunities match the current filter/price. If you entered bookmaker odds, try a lower minimum EV or a different price.</div>';return}box.innerHTML=rows.map(x=>{const f=x.fixture;const lg=valueMajor(f);const price=x.odds;const ev=x.ev;return `<article class="valueCard"><div class="valueCardHead"><div><div class="valueFixture">${valueEsc(f.teams?.home?.name)} vs ${valueEsc(f.teams?.away?.name)}</div><div class="valueLeague">${valueEsc(lg?.name||f.league?.name||'Competition')} · ${new Date(f.fixture.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div></div><div class="valueScore">${x.score}/100</div></div><div class="valueMarket">${valueEsc(x.market)} <span class="valueBadge ${ev!=null?(ev>=min?'':'warn'):'gray'}">${ev!=null?(ev>=min?'VALUE +'+ev.toFixed(1)+'%':'Below EV filter'):'Price required'}</span></div><div class="valueRows"><div class="valueMini"><span>Model probability</span><b>${valuePct(x.p)}</b></div><div class="valueMini"><span>Fair odds</span><b>${x.fair?.toFixed(2)||'—'}</b></div><div class="valueMini"><span>Bookmaker odds</span><b>${price?.toFixed(2)||'—'}</b></div></div><div class="valueReason">${valueEsc(x.reason)} ${x.safer?`Safer line: <b>${valueEsc(x.safer)}</b>.`:''} ${ev!=null?`At ${price.toFixed(2)}, model EV is <b>${ev.toFixed(1)}%</b>.`:'Enter the actual bookmaker price before calling this a real value bet.'}</div></article>`}).join('')}
 
-function showScreen(s){if(s==='personal'){document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));renderPersonalStats();return;}if((viewMode||!window.BB_IS_ADMIN) && s==='add') { if(!viewMode) toast('Admin account required'); s='dashboard'; }state.screen=s;state.expanded='';document.body.classList.toggle('statsMode',s==='stats');document.body.classList.toggle('viewOnly',viewMode);document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));if(s==='dashboard')renderDashboard(true);if(s==='live')renderLive();if(s==='builders')renderBuilders();if(s==='stats')renderStats();if(s==='add')renderAdd();if(s==='value')renderValue()}
+function showScreen(s){if(s==='personal'){document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));renderPersonalStats();return;}if((viewMode||!window.BB_IS_ADMIN) && s==='add') { if(!viewMode) toast('Admin account required'); s='dashboard'; }state.screen=s;state.expanded='';document.body.classList.toggle('statsMode',s==='stats');document.body.classList.toggle('viewOnly',viewMode);document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));if(s==='dashboard')renderDashboard(true);if(s==='live')renderLive();if(s==='builders')renderBuilders();if(s==='stats')renderStats();if(s==='value')renderValue();if(s==='add')renderAdd()}
 function setFilter(f){state.filter=f;renderBuilders()}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));
 
@@ -905,7 +941,7 @@ window.statsPeriod='all';document.body.classList.toggle('viewOnly',viewMode);
 // The other screens are prepared just after first paint instead of blocking startup.
 renderDashboard(true);
 const prepareOtherScreens=()=>{
-  try{renderLive();renderBuilders();renderStats();renderAdd();renderValue();}catch(e){}
+  try{renderLive();renderBuilders();renderStats();renderValue();renderAdd();}catch(e){}
 };
 if('requestIdleCallback' in window) requestIdleCallback(prepareOtherScreens,{timeout:800});
 else setTimeout(prepareOtherScreens,0);
