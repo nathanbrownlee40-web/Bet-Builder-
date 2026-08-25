@@ -861,39 +861,111 @@ async function analyserFixturesByDates(dates){
   const map=new Map();all.forEach(x=>map.set(x.fixture.id,x));return [...map.values()];
 }
 function analyserLineTeamScore(line,name){const a=analyserNorm(line),b=analyserNorm(name);if(!a||!b)return 0;if(a===b||a.includes(b)||b.includes(a))return 1;const d=analyserDistance(a,b);return d<=Math.max(2,Math.floor(Math.max(a.length,b.length)*.30))?0.78:analyserTokenScore(line,name);}
+function analyserTeamLineEligible(line){
+  const x=String(line||'').trim();
+  if(x.length<2||x.length>34)return false;
+  if(/^\d/.test(x)||/\d$/.test(x))return false;
+  if(/^\d{1,2}:\d{2}/.test(x)||/^\d{1,2}[./-]\d{1,2}/.test(x))return false;
+  if(/^(football|leagues?|matches?|filter|live|today|tomorrow|yesterday|search|customise|customize|events?|all|more|uefa|laliga|la liga|efl cup|premier league|england|spain|europe|playoff round|round|fifa|women|men|free|odds|price|total|corners?|cards?|shots?|goals?|home|away)$/i.test(x))return false;
+  return /[a-zA-ZÀ-ÿ]/.test(x);
+}
+function analyserTeamCandidates(text){
+  const raw=analyserOcrLines(text), out=[],seen=new Set();
+  for(const l of raw){
+    const x=l.replace(/\b(\d{1,2}:\d{2}|\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?)\b/g,'').replace(/[^\p{L}\p{N}&.'’ -]/gu,' ').replace(/\s+/g,' ').trim();
+    if(!analyserTeamLineEligible(x))continue;
+    const k=analyserNorm(x); if(!k||seen.has(k))continue; seen.add(k); out.push(x);
+  }
+  return out.slice(0,80);
+}
 function analyserMatchOcrToFixtures(text, fixtures){
-  const lines=analyserOcrLines(text); const compact=analyserNorm(text); const found=[];
-  for(const f of fixtures){const h=f.teams?.home?.name||'', a=f.teams?.away?.name||'';const hs=Math.max(...lines.map(l=>analyserLineTeamScore(l,h)),0), as=Math.max(...lines.map(l=>analyserLineTeamScore(l,a)),0);const wholeH=analyserLineTeamScore(compact,h),wholeA=analyserLineTeamScore(compact,a);if((hs>=.70&&as>=.70)||(wholeH>=.78&&wholeA>=.78))found.push(f);}
+  const lines=analyserTeamCandidates(text), compact=analyserNorm(text), found=[];
+  for(const f of fixtures){
+    const h=f.teams?.home?.name||'', a=f.teams?.away?.name||'';
+    const hs=Math.max(0,...lines.map(l=>analyserLineTeamScore(l,h)));
+    const as=Math.max(0,...lines.map(l=>analyserLineTeamScore(l,a)));
+    const wholeH=analyserLineTeamScore(compact,h), wholeA=analyserLineTeamScore(compact,a);
+    // Accept clean exact/near matches and also two weaker OCR matches when both sides agree.
+    if((hs>=.62&&as>=.62)||(hs>=.48&&as>=.48&&hs+as>=1.18)||(wholeH>=.72&&wholeA>=.72))found.push(f);
+  }
   return found;
 }
 function analyserGuessPairs(text){
-  const lines=analyserOcrLines(text); const pairs=[];
-  // OCR from fixture-list apps commonly puts home/away on adjacent lines.
-  for(let i=0;i<lines.length-1;i++){
-    const a=lines[i],b=lines[i+1];
-    if(a.length>2&&b.length>2&&a.length<32&&b.length<32&&/[a-z]/i.test(a)&&/[a-z]/i.test(b)){
-      if(!/^(over|under|corners?|cards?|shots?|goals?|win|draw|loss|real|total|odds|price|league|filter|matches?|today|tomorrow)$/i.test(a)&&!/^\d/.test(a)&&!/^\d/.test(b)) pairs.push([a,b]);
+  const lines=analyserTeamCandidates(text), pairs=[];
+  // Fixture-list apps normally put home/away on adjacent lines, but allow a small OCR gap.
+  for(let i=0;i<lines.length;i++){
+    for(let j=i+1;j<=Math.min(lines.length-1,i+2);j++){
+      const a=lines[i],b=lines[j];
+      if(a===b)continue;
+      if(a.length>2&&b.length>2&&a.length<34&&b.length<34)pairs.push([a,b]);
     }
   }
-  const seen=new Set();return pairs.filter(p=>{const k=analyserNorm(p.join('|'));if(seen.has(k))return false;seen.add(k);return true;}).slice(0,12);
+  const seen=new Set();return pairs.filter(p=>{const k=analyserNorm(p.join('|'));if(seen.has(k))return false;seen.add(k);return true;}).slice(0,40);
+}
+async function analyserMatchByTeamCandidates(text, fixtures){
+  const candidates=analyserTeamCandidates(text); const found=[];
+  for(const f of fixtures){
+    const h=f.teams?.home?.name||'',a=f.teams?.away?.name||'';
+    const hs=Math.max(0,...candidates.map(x=>analyserLineTeamScore(x,h)));
+    const as=Math.max(0,...candidates.map(x=>analyserLineTeamScore(x,a)));
+    if(hs>=.58&&as>=.58)found.push(f);
+  }
+  return found;
 }
 async function liveAnalyseFixtures(text){
- const status=document.getElementById('analyserOCRStatus'); status.textContent='Finding fixtures from the screenshot…';
- const dates=analyserDateCandidates(text); let fixtures=await analyserFixturesByDates(dates); let selected=analyserMatchOcrToFixtures(text,fixtures);
- // If the screenshot's date is old/missing or the fixture list endpoint did not match, use team search as a fallback.
- if(!selected.length){const pairs=analyserGuessPairs(text);for(const [hn,an] of pairs.slice(0,10)){try{const ht=await apiFindTeam(hn),at=await apiFindTeam(an);if(ht&&at){const rows=await apiFootball('/fixtures?team='+ht.id+'&next=20');const exact=rows.find(x=>{const h=x.teams?.home?.name||'',a=x.teams?.away?.name||'';return analyserLineTeamScore(h,hn)>=.70&&analyserLineTeamScore(a,an)>=.70;});if(exact)selected.push(exact);}}catch(e){console.warn('Team fallback failed',hn,an,e)}}}
- if(!selected.length) throw new Error('I read the screenshot, but could not match the fixtures to the football database. Try the same screenshot again — the app will use a larger OCR crop automatically.');
+ const status=document.getElementById('analyserOCRStatus');
+ status.textContent='Finding fixtures from the screenshot…';
+ const dates=analyserDateCandidates(text);
+ let fixtures=[];
+ try{fixtures=await analyserFixturesByDates(dates);}catch(e){console.warn('Date fixture lookup failed',e)}
+ let selected=analyserMatchOcrToFixtures(text,fixtures);
+ if(!selected.length)selected=await analyserMatchByTeamCandidates(text,fixtures);
+ // Strong fallback: use OCR team pairs and search the API for each team, then verify both sides.
+ if(!selected.length){
+   const pairs=analyserGuessPairs(text);
+   for(const [hn,an] of pairs.slice(0,24)){
+     try{
+       const ht=await apiFindTeam(hn),at=await apiFindTeam(an);
+       if(!ht||!at)continue;
+       const rows=await apiFootball('/fixtures?team='+ht.id+'&next=30');
+       const exact=rows.find(x=>{
+         const h=x.teams?.home?.name||'',a=x.teams?.away?.name||'';
+         return analyserLineTeamScore(h,hn)>=.55&&analyserLineTeamScore(a,an)>=.55&&(
+           analyserLineTeamScore(h,ht.name)>=.70||analyserLineTeamScore(a,at.name)>=.70
+         );
+       });
+       if(exact&&!selected.some(x=>x.fixture?.id===exact.fixture?.id))selected.push(exact);
+     }catch(e){console.warn('Team fallback failed',hn,an,e)}
+     if(selected.length>=12)break;
+   }
+ }
+ if(!selected.length){
+   const names=analyserTeamCandidates(text).slice(0,16).join(', ');
+   throw new Error('I can read the screenshot, but the football database did not match the detected teams. Detected: '+(names||'no team names')+'. Try Analyse again; the app will use the date and team search fallbacks.');
+ }
+ // Show what was actually matched before the stats requests begin.
+ status.textContent=`Matched ${selected.length} fixture${selected.length===1?'':'s'} — researching last 5 games, goals, corners, cards and shots on target…`;
  const results=[]; let count=0, statsCalls=0; const statsCache=new Map();
  async function getEnrichedFixture(id){if(statsCache.has(id))return statsCache.get(id);let data=[];try{data=await apiFootball('/fixtures/statistics?fixture='+id);statsCalls++;}catch(e){console.warn('Statistics unavailable for fixture',id,e)}statsCache.set(id,data);return data;}
  for(const fixture of selected.slice(0,10)){
-   const hn=fixture.teams?.home?.name, an=fixture.teams?.away?.name; status.textContent=`Researching ${hn} vs ${an}…`;
-   try{const ht=fixture.teams.home,at=fixture.teams.away;const hg=await apiFootball('/fixtures?team='+ht.id+'&last=5'),ag=await apiFootball('/fixtures?team='+at.id+'&last=5');const hs=recentSummary(hg,ht.id),as=recentSummary(ag,at.id);hs.corners=[];hs.cards=[];hs.sot=[];hs.shots=[];as.corners=[];as.cards=[];as.sot=[];as.shots=[];
+   const hn=fixture.teams?.home?.name, an=fixture.teams?.away?.name;
+   status.textContent=`Researching ${hn} vs ${an}…`;
+   try{
+     const ht=fixture.teams.home,at=fixture.teams.away;
+     const hg=await apiFootball('/fixtures?team='+ht.id+'&last=5');
+     const ag=await apiFootball('/fixtures?team='+at.id+'&last=5');
+     const hs=recentSummary(hg,ht.id),as=recentSummary(ag,at.id);
+     hs.corners=[];hs.cards=[];hs.sot=[];hs.shots=[];as.corners=[];as.cards=[];as.sot=[];as.shots=[];
      const ids=[...new Map([...hg,...ag].filter(g=>g?.fixture?.id).map(g=>[g.fixture.id,g])).values()];
-     for(const g of ids){if(statsCalls>=70)break;const data=await getEnrichedFixture(g.fixture.id);if(data.length)addFixtureStats(hs,{statistics:data},ht.id),addFixtureStats(as,{statistics:data},at.id);}
-     const markets=marketFromSummaries(hs,as); for(const m of markets)results.push({fixture:`${hn} vs ${an}`,date:fixture.fixture?.date?new Date(fixture.fixture.date).toLocaleDateString('en-GB'): 'Upcoming',time:fixture.fixture?.date?new Date(fixture.fixture.date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'',league:fixture.league?.name||'Live data',...m});count++;
+     for(const g of ids){if(statsCalls>=70)break;const data=await getEnrichedFixture(g.fixture.id);if(data.length){addFixtureStats(hs,{statistics:data},ht.id);addFixtureStats(as,{statistics:data},at.id);}}
+     const markets=marketFromSummaries(hs,as);
+     for(const m of markets)results.push({fixture:`${hn} vs ${an}`,date:fixture.fixture?.date?new Date(fixture.fixture.date).toLocaleDateString('en-GB'):'Upcoming',time:fixture.fixture?.date?new Date(fixture.fixture.date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'',league:fixture.league?.name||'Live data',...m});
+     count++;
    }catch(e){console.warn('Fixture analysis failed',fixture,e)}
  }
- analyserLiveData=results; status.textContent=`Live analysis complete: ${count} fixture(s). Last-5 form plus corners, cards and shots on target where data is available. ${statsCalls} statistics calls used.`; analyserRenderResults(results);
+ analyserLiveData=results;
+ status.textContent=`Live analysis complete: ${count} fixture${count===1?'':'s'}. Goals, BTTS, last-5 form plus corners, cards and shots on target where data is available. ${statsCalls} statistics calls used.`;
+ analyserRenderResults(results);
 }
 function analyserDetectEmbeddedScreenshot(img){
   const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;
@@ -955,7 +1027,7 @@ async function analyserScan(file){
    }
    analyserOCRText=texts.join('\n');
    const lines=analyserOcrLines(analyserOCRText); const likely=analyserGuessPairs(analyserOCRText);
-   status.textContent=`Screenshot read: ${lines.length} useful lines${likely.length?` · ${likely.length} possible fixture${likely.length===1?'':'s'} detected`:''}. Tap ⚡ Analyse screenshot with live last-5 data.`;
+   const teamCandidates=analyserTeamCandidates(analyserOCRText); status.textContent=`Screenshot read: ${lines.length} useful lines · ${teamCandidates.length} team names detected${likely.length?` · ${likely.length} possible fixture pairs`:''}. Tap ⚡ Analyse screenshot with live last-5 data.`;
    // Show any spreadsheet matches as a preview, but don't block live analysis if none match.
    analyserRenderResults(analyserFindMatches(analyserOCRText));
  }catch(e){console.error(e);document.getElementById('analyserOCRStatus').textContent='Could not process screenshot. Try again — the analyser supports full screenshots and screenshots containing a smaller fixture image.';}
