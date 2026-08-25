@@ -912,27 +912,71 @@ async function analyserMatchByTeamCandidates(text, fixtures){
   }
   return found;
 }
+async function analyserLiveUpcomingFixtures(){
+  // One broad upcoming-fixtures request is far more reliable than trying to search
+  // every noisy OCR line as if it were a team name.
+  const out=[];
+  const seen=new Set();
+  for(const path of ['/fixtures?next=100','/fixtures?from='+new Date().toISOString().slice(0,10)+'&to='+new Date(Date.now()+4*86400000).toISOString().slice(0,10)]){
+    try{
+      const rows=await apiFootball(path);
+      rows.forEach(x=>{if(x?.fixture?.id&&!seen.has(x.fixture.id)){seen.add(x.fixture.id);out.push(x);}});
+    }catch(e){console.warn('Upcoming fixture lookup failed',path,e)}
+  }
+  return out;
+}
+function analyserCleanOcrBlob(text){
+  return String(text||'').replace(/\b(football|matches|leagues|filter|live|today|tomorrow|search sofascore|customise your events list from here|winnings boost|offers free|outrights offers|free|home|away|all sports|casino|in play|my bets|soccer|uefa champions league qualifying|la liga|efl cup|england|spain|europe)\b/gi,' ')
+    .replace(/\s+/g,' ').trim();
+}
+function analyserNameScore(blob,name){
+  const n=analyserNorm(name); if(!n)return 0;
+  const b=analyserNorm(blob);
+  if(b.includes(n))return 1;
+  const words=n.split(' ').filter(x=>x.length>2);
+  if(!words.length)return 0;
+  let hit=0;
+  for(const w of words){if(b.includes(w))hit++;}
+  return hit/words.length;
+}
+function analyserMatchBroadOcr(text,fixtures){
+  const blob=analyserCleanOcrBlob(text), found=[];
+  for(const f of fixtures){
+    const h=f.teams?.home?.name||'', a=f.teams?.away?.name||'';
+    const hs=analyserNameScore(blob,h), as=analyserNameScore(blob,a);
+    // A real fixture is only accepted when BOTH teams are recognisable.
+    if(hs>=0.70&&as>=0.70) found.push({f,score:hs+as});
+  }
+  return found.sort((a,b)=>b.score-a.score).map(x=>x.f);
+}
 async function liveAnalyseFixtures(text){
  const status=document.getElementById('analyserOCRStatus');
  status.textContent='Finding fixtures from the screenshot…';
- const dates=analyserDateCandidates(text);
  let fixtures=[];
+ // First use the exact screenshot date if OCR found one.
+ const dates=analyserDateCandidates(text);
  try{fixtures=await analyserFixturesByDates(dates);}catch(e){console.warn('Date fixture lookup failed',e)}
+ // If the OCR date is wrong/missing, use the current/upcoming fixture feed.
  let selected=analyserMatchOcrToFixtures(text,fixtures);
- if(!selected.length)selected=await analyserMatchByTeamCandidates(text,fixtures);
- // Strong fallback: use OCR team pairs and search the API for each team, then verify both sides.
  if(!selected.length){
-   const pairs=analyserGuessPairs(text);
-   for(const [hn,an] of pairs.slice(0,24)){
+   const upcoming=await analyserLiveUpcomingFixtures();
+   selected=analyserMatchBroadOcr(text,upcoming);
+ }
+ // Last resort: search only short, plausible OCR names and verify them against
+ // the team's upcoming fixtures. Never feed giant OCR sentences to /teams?search.
+ if(!selected.length){
+   const candidates=analyserTeamCandidates(text).filter(x=>x.length<=24&&x.split(/\s+/).length<=3);
+   const pairs=[];
+   for(let i=0;i<candidates.length;i++)for(let j=i+1;j<Math.min(candidates.length,i+4);j++)pairs.push([candidates[i],candidates[j]]);
+   for(const [hn,an] of pairs.slice(0,20)){
      try{
        const ht=await apiFindTeam(hn),at=await apiFindTeam(an);
        if(!ht||!at)continue;
        const rows=await apiFootball('/fixtures?team='+ht.id+'&next=30');
        const exact=rows.find(x=>{
          const h=x.teams?.home?.name||'',a=x.teams?.away?.name||'';
-         return analyserLineTeamScore(h,hn)>=.55&&analyserLineTeamScore(a,an)>=.55&&(
-           analyserLineTeamScore(h,ht.name)>=.70||analyserLineTeamScore(a,at.name)>=.70
-         );
+         return ((analyserLineTeamScore(h,hn)>=.55&&analyserLineTeamScore(a,an)>=.55) ||
+                 (analyserLineTeamScore(h,an)>=.55&&analyserLineTeamScore(a,hn)>=.55));
        });
        if(exact&&!selected.some(x=>x.fixture?.id===exact.fixture?.id))selected.push(exact);
      }catch(e){console.warn('Team fallback failed',hn,an,e)}
@@ -940,10 +984,9 @@ async function liveAnalyseFixtures(text){
    }
  }
  if(!selected.length){
-   const names=analyserTeamCandidates(text).slice(0,16).join(', ');
-   throw new Error('I can read the screenshot, but the football database did not match the detected teams. Detected: '+(names||'no team names')+'. Try Analyse again; the app will use the date and team search fallbacks.');
+   const names=analyserTeamCandidates(text).filter(x=>x.length<=24).slice(0,20).join(', ');
+   throw new Error('I read the screenshot, but could not safely match the teams to live fixtures. Detected text: '+(names||'no usable team names')+'. The screenshot itself is readable; the problem is fixture matching, so no statistics were requested.');
  }
- // Show what was actually matched before the stats requests begin.
  status.textContent=`Matched ${selected.length} fixture${selected.length===1?'':'s'} — researching last 5 games, goals, corners, cards and shots on target…`;
  const results=[]; let count=0, statsCalls=0; const statsCache=new Map();
  async function getEnrichedFixture(id){if(statsCache.has(id))return statsCache.get(id);let data=[];try{data=await apiFootball('/fixtures/statistics?fixture='+id);statsCalls++;}catch(e){console.warn('Statistics unavailable for fixture',id,e)}statsCache.set(id,data);return data;}
