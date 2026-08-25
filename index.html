@@ -857,8 +857,7 @@ function renderValue(){
   const el=document.getElementById('value'); if(!el)return;
   el.innerHTML=`<div class="valueHero"><h2>💰 Value Scanner</h2><p>Major leagues & cups first. The scanner gets fixtures by date, then models goals, corners, cards and shots on target from available match statistics. A value flag only appears when the model probability beats the supplied bookmaker price.</p></div>
   <div class="valueControls"><div class="valueGrid"><div class="field"><label>Fixture date</label><input id="valueDate" type="date" value="${valueEsc(VALUE_STATE.date)}"></div><div class="field"><label>Minimum EV to show (%)</label><input id="valueMinEV" type="number" min="0" step="1" value="${VALUE_STATE.minEV}"></div></div>
-  <div class="field"><label>Bookmaker odds (optional)</label><input id="valueOdds" placeholder="e.g. 1.85 — used to confirm real price value"></div>
-  <div class="hint">If no current bookmaker price is supplied, the app can rank model opportunities but will label them <b>price required</b> rather than pretending they are confirmed value bets.</div>
+  <div class="hint"><b>Automatic bookmaker odds:</b> the scanner pulls the available pre-match prices for the selected date, matches them to each fixture and market, then compares them with the model's fair odds. If a market has no bookmaker price, it is shown as <b>price unavailable</b> rather than being treated as value.</div>
   <div class="actions"><button class="btn primary" id="valueScanBtn">🔎 Scan major leagues & cups</button></div><div id="valueStatus" class="valueStatus"></div></div>
   <div class="sectionHead"><h2>Top opportunities</h2><span class="small" id="valueCount">0 shown</span></div><div class="valueFilters"><button class="valuePill active" data-vfilter="all">All</button><button class="valuePill" data-vfilter="goals">⚽ Goals</button><button class="valuePill" data-vfilter="corners">🚩 Corners</button><button class="valuePill" data-vfilter="cards">🟨 Cards</button><button class="valuePill" data-vfilter="sot">🎯 Shots on Target</button></div><div id="valueResults" class="valueResults"><div class="valueEmpty">Choose a date and scan. Major leagues and cups will be prioritised instead of youth/reserve fixtures.</div></div>`;
   document.getElementById('valueScanBtn').onclick=scanValue;
@@ -902,33 +901,124 @@ function valueMarketRows(teamA,teamB){
 }
 async function valueApi(path){const r=await fetch('/.netlify/functions/football'+path);let d={};try{d=await r.json()}catch{}if(!r.ok)throw new Error(d?.error||'Football data request failed');return d;}
 async function scanValue(){
-  if(VALUE_STATE.loading)return;VALUE_STATE.loading=true;VALUE_STATE.results=[];const status=document.getElementById('valueStatus');if(status){status.className='valueStatus';status.textContent='Loading fixtures for '+valueFixtureDate()+'…'}
+  if(VALUE_STATE.loading)return;
+  VALUE_STATE.loading=true;VALUE_STATE.results=[];
+  const status=document.getElementById('valueStatus');
+  if(status){status.className='valueStatus';status.textContent='Loading fixtures and bookmaker odds for '+valueFixtureDate()+'…'}
   try{
-    const data=await valueApi('?action=fixtures&date='+encodeURIComponent(valueFixtureDate()));
-    const fixtures=(data.response||[]).filter(f=>f?.fixture?.status?.short==='NS'||f?.fixture?.status?.short==='TBD').filter(f=>valueMajor(f));
-    const unique=[];const seen=new Set();for(const f of fixtures){const k=f.fixture.id;if(!seen.has(k)){seen.add(k);unique.push(f)}}
+    const date=valueFixtureDate();
+    const [fixtureData, oddsData]=await Promise.all([
+      valueApi('?action=fixtures&date='+encodeURIComponent(date)),
+      valueApi('?action=odds_date&date='+encodeURIComponent(date))
+    ]);
+    const fixtures=(fixtureData.response||[])
+      .filter(f=>f?.fixture?.status?.short==='NS'||f?.fixture?.status?.short==='TBD')
+      .filter(f=>valueMajor(f));
+    const unique=[];const seen=new Set();
+    for(const f of fixtures){const k=f.fixture.id;if(!seen.has(k)){seen.add(k);unique.push(f)}}
     unique.sort((a,b)=>(valueMajor(b).priority-valueMajor(a).priority)||new Date(a.fixture.date)-new Date(b.fixture.date));
-    if(status)status.textContent=`Found ${unique.length} major-league/cup fixtures. Analysing available recent data…`;
+
+    const oddsByFixture=new Map();
+    for(const item of (oddsData.response||[])){
+      const id=Number(item?.fixture?.id);if(id)oddsByFixture.set(id,item);
+    }
+    if(status)status.textContent=`Found ${unique.length} major-league/cup fixtures and ${oddsByFixture.size} fixtures with bookmaker odds. Analysing…`;
+
     const out=[];const max=unique.slice(0,30);
+    const teamStatsCache=new Map();
+    async function getTeamStats(teamId){
+      if(teamStatsCache.has(teamId))return teamStatsCache.get(teamId);
+      const promise=(async()=>{
+        const d=await valueApi('?action=team_last5&team='+teamId);
+        const fs=(d.response||[]).filter(x=>['FT','AET','PEN'].includes(x?.fixture?.status?.short)).slice(0,5);
+        let goals=0,corners=0,cards=0,sot=0,n=0;
+        for(const x of fs){
+          const id=x.fixture?.id;if(!id)continue;
+          try{
+            const st=await valueApi('?action=stats&fixture='+id);
+            const rows=st.response||[];const row=rows.find(r=>Number(r.team?.id)===Number(teamId));
+            if(!row)continue;
+            const isHome=Number(x.teams?.home?.id)===Number(teamId);
+            const gf=isHome?x.goals?.home:x.goals?.away;
+            goals+=Number(gf??0);
+            corners+=valueStat(row.statistics,'Corner Kicks')||0;
+            cards+=(valueStat(row.statistics,'Yellow Cards')||0)+(valueStat(row.statistics,'Red Cards')||0);
+            sot+=valueStat(row.statistics,'Shots on Goal')||0;
+            n++;
+          }catch(e){/* missing stats for a historical fixture */}
+        }
+        return {avgGoals:n?goals/n:null,avgCorners:n?corners/n:null,avgCards:n?cards/n:null,avgSOT:n?sot/n:null,n};
+      })();
+      teamStatsCache.set(teamId,promise);return promise;
+    }
+
+    // Extract the best available price for a generated market. We deliberately
+    // use the highest available bookmaker price because EV is evaluated at the
+    // price a bettor can actually obtain, not at an arbitrary bookmaker.
+    function bestOddsFor(oddsItem, cat, line){
+      const target='Over '+line;
+      let best=null;
+      for(const bm of (oddsItem?.bookmakers||[])){
+        for(const bet of (bm?.bets||[])){
+          const bn=String(bet?.name||'').toLowerCase();
+          const relevant=cat==='goals'
+            ? (bn.includes('goals')||bn.includes('goal'))
+            : cat==='corners'
+              ? (bn.includes('corner'))
+              : cat==='cards'
+                ? (bn.includes('card'))
+                : (bn.includes('shot') && (bn.includes('target')||bn.includes('on goal')));
+          if(!relevant)continue;
+          for(const v of (bet?.values||[])){
+            const label=String(v?.value||'').replace(/\s+/g,' ').trim();
+            if(label.toLowerCase()!==target.toLowerCase())continue;
+            const odd=valueNum(v?.odd);
+            if(odd && odd>1 && (!best || odd>best.odd))best={odd,bookmaker:bm?.name||'Bookmaker',bet:bet?.name||''};
+          }
+        }
+      }
+      return best;
+    }
+
     for(let i=0;i<max.length;i++){
-      const f=max[i], a=valueTeamId(f.teams.home), b=valueTeamId(f.teams.away);if(!a||!b)continue;
+      const f=max[i],a=valueTeamId(f.teams.home),b=valueTeamId(f.teams.away);if(!a||!b)continue;
       try{
-        const [ra,rb]=await Promise.all([valueApi('?action=team_last5&team='+a),valueApi('?action=team_last5&team='+b)]);
-        const pack=(d)=>{const fs=d.response||[];const stats=[];return {stats:stats,fixtures:fs}};
-        const pa=pack(ra),pb=pack(rb);
-        const avgs=async(p)=>{let goals=0,corners=0,cards=0,sot=0,n=0;for(const x of (p.fixtures||[])){const id=x.fixture?.id;if(!id)continue;try{const st=await valueApi('?action=stats&fixture='+id);const rows=st.response||[];const teamId=p.teamId;let teamRows=rows;let row=teamRows.find(r=>Number(r.team?.id)===Number(teamId));if(!row&&rows[0])row=rows[0];if(row){const isHome=Number(x.teams?.home?.id)===Number(p.teamId); const gf=isHome?x.goals?.home:x.goals?.away; goals+=Number(gf??0);corners+=valueStat(row.statistics,'Corner Kicks')||0;cards+=(valueStat(row.statistics,'Yellow Cards')||0)+(valueStat(row.statistics,'Red Cards')||0);sot+=valueStat(row.statistics,'Shots on Goal')||0;n++;}}catch(e){}}
-          return {avgGoals:n?goals/n:null,avgCorners:n?corners/n:null,avgCards:n?cards/n:null,avgSOT:n?sot/n:null,n};};
-        pa.teamId=a;pb.teamId=b;const [sa,sb]=await Promise.all([avgs(pa),avgs(pb)]);pa.stats=sa;pb.stats=sb;
+        const [sa,sb]=await Promise.all([getTeamStats(a),getTeamStats(b)]);
         const markets=valueMarketRows({stats:sa},{stats:sb});
-        for(const m of markets){const score=Math.round(Math.min(99,Math.max(1,m.p*100)));out.push({fixture:f,cat:m.cat,market:m.market,p:m.p,score,reason:m.reason,safer:m.safer});}
+        const oddsItem=oddsByFixture.get(Number(f.fixture.id));
+        for(const m of markets){
+          const line=(m.market.match(/Over\s+([0-9]+(?:\.[05])?)/i)||[])[1];
+          const price=line?bestOddsFor(oddsItem,m.cat,line):null;
+          const ev=price?valueEv(m.p,price.odd):null;
+          const score=Math.round(Math.min(99,Math.max(1,m.p*100)));
+          out.push({fixture:f,cat:m.cat,market:m.market,p:m.p,score,reason:m.reason,safer:m.safer,price,ev,fair:valueFair(m.p)});
+        }
       }catch(e){console.warn('fixture analysis failed',f,e)}
       if(status)status.textContent=`Analysed ${i+1}/${max.length} fixtures…`;
     }
-    VALUE_STATE.results=out.sort((x,y)=>y.score-x.score);renderValueResults();if(status){status.className='valueStatus ok';status.textContent=`Scan complete: ${unique.length} major fixtures found, ${out.length} model opportunities generated. Bookmaker price is still required to confirm real EV/value.`}
-  }catch(e){if(status){status.className='valueStatus err';status.textContent=e.message||'Scan failed.'}document.getElementById('valueResults').innerHTML='<div class="valueNotice">'+valueEsc(e.message||'Unable to scan. Make sure the Netlify function has API_FOOTBALL_KEY configured.')+'</div>'}
-  finally{VALUE_STATE.loading=false}
+    VALUE_STATE.results=out.sort((x,y)=>(y.ev??-999)-(x.ev??-999)||y.score-x.score);
+    renderValueResults();
+    const priced=out.filter(x=>x.ev!=null&&x.ev>=VALUE_STATE.minEV).length;
+    if(status){status.className='valueStatus ok';status.textContent=`Scan complete: ${unique.length} major fixtures found, ${out.length} model markets generated, ${priced} currently meet your ${VALUE_STATE.minEV}% EV filter.`}
+  }catch(e){
+    if(status){status.className='valueStatus err';status.textContent=e.message||'Scan failed.'}
+    const box=document.getElementById('valueResults');if(box)box.innerHTML='<div class="valueNotice">'+valueEsc(e.message||'Unable to scan. Make sure the Netlify function has API_FOOTBALL_KEY configured.')+'</div>';
+  }finally{VALUE_STATE.loading=false}
 }
-function renderValueResults(){const box=document.getElementById('valueResults');if(!box)return;let rows=VALUE_STATE.results.filter(x=>VALUE_STATE.filter==='all'||x.cat===VALUE_STATE.filter);const min=valueNum(document.getElementById('valueMinEV')?.value)||VALUE_STATE.minEV;const odds=valueNum(document.getElementById('valueOdds')?.value);rows=rows.map(x=>({...x,odds,ev:valueEv(x.p,odds),fair:valueFair(x.p)}));if(odds)rows=rows.filter(x=>x.ev!=null&&x.ev>=min);rows=rows.slice(0,50);const count=document.getElementById('valueCount');if(count)count.textContent=rows.length+' shown';if(!rows.length){box.innerHTML='<div class="valueEmpty">No opportunities match the current filter/price. If you entered bookmaker odds, try a lower minimum EV or a different price.</div>';return}box.innerHTML=rows.map(x=>{const f=x.fixture;const lg=valueMajor(f);const price=x.odds;const ev=x.ev;return `<article class="valueCard"><div class="valueCardHead"><div><div class="valueFixture">${valueEsc(f.teams?.home?.name)} vs ${valueEsc(f.teams?.away?.name)}</div><div class="valueLeague">${valueEsc(lg?.name||f.league?.name||'Competition')} · ${new Date(f.fixture.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div></div><div class="valueScore">${x.score}/100</div></div><div class="valueMarket">${valueEsc(x.market)} <span class="valueBadge ${ev!=null?(ev>=min?'':'warn'):'gray'}">${ev!=null?(ev>=min?'VALUE +'+ev.toFixed(1)+'%':'Below EV filter'):'Price required'}</span></div><div class="valueRows"><div class="valueMini"><span>Model probability</span><b>${valuePct(x.p)}</b></div><div class="valueMini"><span>Fair odds</span><b>${x.fair?.toFixed(2)||'—'}</b></div><div class="valueMini"><span>Bookmaker odds</span><b>${price?.toFixed(2)||'—'}</b></div></div><div class="valueReason">${valueEsc(x.reason)} ${x.safer?`Safer line: <b>${valueEsc(x.safer)}</b>.`:''} ${ev!=null?`At ${price.toFixed(2)}, model EV is <b>${ev.toFixed(1)}%</b>.`:'Enter the actual bookmaker price before calling this a real value bet.'}</div></article>`}).join('')}
+function renderValueResults(){
+  const box=document.getElementById('valueResults');if(!box)return;
+  let rows=VALUE_STATE.results.filter(x=>VALUE_STATE.filter==='all'||x.cat===VALUE_STATE.filter);
+  const min=valueNum(document.getElementById('valueMinEV')?.value)||VALUE_STATE.minEV;
+  rows=rows.slice().sort((a,b)=>(b.ev??-999)-(a.ev??-999)||b.p-a.p).slice(0,50);
+  const count=document.getElementById('valueCount');if(count)count.textContent=rows.length+' shown';
+  if(!rows.length){box.innerHTML='<div class="valueEmpty">No model markets were generated. This normally means the competition does not have enough historical statistics available.</div>';return}
+  box.innerHTML=rows.map(x=>{
+    const f=x.fixture,lg=valueMajor(f),price=x.price,ev=x.ev;
+    const status=price?(ev>=min?'VALUE +'+ev.toFixed(1)+'%':ev>=0?'Positive EV below filter':'No value at best price'):'Price unavailable';
+    const cls=price?(ev>=min?'':'warn'):'gray';
+    return `<article class="valueCard"><div class="valueCardHead"><div><div class="valueFixture">${valueEsc(f.teams?.home?.name)} vs ${valueEsc(f.teams?.away?.name)}</div><div class="valueLeague">${valueEsc(lg?.name||f.league?.name||'Competition')} · ${new Date(f.fixture.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div></div><div class="valueScore">${x.score}/100</div></div><div class="valueMarket">${valueEsc(x.market)} <span class="valueBadge ${cls}">${status}</span></div><div class="valueRows"><div class="valueMini"><span>Model probability</span><b>${valuePct(x.p)}</b></div><div class="valueMini"><span>Fair odds</span><b>${x.fair?.toFixed(2)||'—'}</b></div><div class="valueMini"><span>Best bookmaker</span><b>${valueEsc(price?.bookmaker||'—')}</b></div><div class="valueMini"><span>Bookmaker odds</span><b>${price?.odd?.toFixed(2)||'—'}</b></div><div class="valueMini"><span>EV</span><b>${ev!=null?(ev.toFixed(1)+'%'):'—'}</b></div></div><div class="valueReason">${valueEsc(x.reason)} ${x.safer?`Safer line: <b>${valueEsc(x.safer)}</b>.`:''} ${price?`Best available price: <b>${price.odd.toFixed(2)}</b> at ${valueEsc(price.bookmaker)}.`:'No matching pre-match bookmaker price was returned for this market.'}</div></article>`
+  }).join('');
+}
 
 function showScreen(s){if(s==='personal'){document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));renderPersonalStats();return;}if((viewMode||!window.BB_IS_ADMIN) && s==='add') { if(!viewMode) toast('Admin account required'); s='dashboard'; }state.screen=s;state.expanded='';document.body.classList.toggle('statsMode',s==='stats');document.body.classList.toggle('viewOnly',viewMode);document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===s));if(s==='dashboard')renderDashboard(true);if(s==='live')renderLive();if(s==='builders')renderBuilders();if(s==='stats')renderStats();if(s==='value')renderValue();if(s==='add')renderAdd()}
 function setFilter(f){state.filter=f;renderBuilders()}

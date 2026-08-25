@@ -25,4 +25,4 @@ NETLIFY SETUP
 The API key is deliberately NOT embedded in the browser code.
 
 API-FOOTBALL PLAN
-The function first tries team fixtures with last=5. If the Free plan rejects that parameter, it falls back to a 120-day team date range and takes the five latest completed matches. Free plans still have limited season/data access, so some current major competitions may require a paid plan.
+The function also pulls pre-match odds by date. API-Football keeps pre-match odds for a limited recent window and availability varies by fixture/competition/bookmaker. The scanner uses the highest returned bookmaker price for a matching market; it does not invent a price when none is returned. Free plans still have limited season/data access, and the scanner can make many statistics/odds requests, so a higher request allowance may be needed for broad scans.
