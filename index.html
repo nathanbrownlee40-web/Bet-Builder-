@@ -824,11 +824,19 @@ function fairOdds(p){return p>0?1/p:null}
 function ev(p,odds){return p&&odds?(p*odds-1):null}
 function normTeam(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'')}
 function teamMatch(a,b){a=normTeam(a);b=normTeam(b);return a===b||a.includes(b)||b.includes(a)}
-async function findTeamHistory(teamId){
-  // API-Football supports team + last directly; don't combine last with status.
-  // Filter to completed matches client-side so leagues with AET/PEN are retained.
-  const arr=await Vfetch('/.netlify/functions/football-api?path=fixtures&team='+encodeURIComponent(teamId)+'&last=20');
-  return (arr||[]).filter(x=>['FT','AET','PEN'].includes(x?.fixture?.status?.short));
+const VALUE_HISTORY_CACHE=new Map();
+async function findTeamHistory(teamId, beforeDate){
+  const season=new Date(beforeDate||VALUE_STATE.date+'T23:59:59Z').getUTCFullYear();
+  const cacheKey=String(teamId)+'|'+season;
+  if(VALUE_HISTORY_CACHE.has(cacheKey)) return VALUE_HISTORY_CACHE.get(cacheKey).filter(x=>new Date(x.fixture?.date||0)<new Date(beforeDate||'9999-12-31T23:59:59Z'));
+  // The Free API-Football plan rejects the `last` parameter. Use the team's
+  // current-season fixture list instead, then keep only completed matches
+  // before the upcoming fixture. This uses a supported free-plan filter.
+  const arr=await Vfetch('/.netlify/functions/football-api?path=fixtures&team='+encodeURIComponent(teamId)+'&season='+encodeURIComponent(season));
+  const completed=(arr||[]).filter(x=>['FT','AET','PEN'].includes(x?.fixture?.status?.short));
+  completed.sort((a,b)=>new Date(b.fixture?.date||0)-new Date(a.fixture?.date||0));
+  VALUE_HISTORY_CACHE.set(cacheKey,completed);
+  return completed.filter(x=>new Date(x.fixture?.date||0)<new Date(beforeDate||'9999-12-31T23:59:59Z')).slice(0,20);
 }
 async function getOdds(fixtureId){try{return await Vfetch('/.netlify/functions/football-api?path=odds&fixture='+fixtureId);}catch(e){return []}}
 function parseOdds(odds){
@@ -846,14 +854,14 @@ function parseOdds(odds){
 }
 async function runValueScan(){
  
- VALUE_STATE.date=document.getElementById('valueDate').value;VALUE_STATE.running=true;VALUE_STATE.results=[];VALUE_STATE.statsCalls=0;renderValue();
+ VALUE_STATE.date=document.getElementById('valueDate').value;VALUE_STATE.running=true;VALUE_STATE.results=[];VALUE_STATE.statsCalls=0;VALUE_HISTORY_CACHE.clear();renderValue();
  try{
   const fx=await Vfetch('/.netlify/functions/football-api?path=fixtures&date='+encodeURIComponent(VALUE_STATE.date)+'&status=NS');
   VALUE_STATE.fixtures=Array.from(new Map((fx||[]).map(x=>[x.fixture?.id,x])).values()).slice(0,20);
   for(let i=0;i<VALUE_STATE.fixtures.length;i++){
    const f=VALUE_STATE.fixtures[i]; renderValueProgress(i+1,VALUE_STATE.fixtures.length);
    try{
-    const [hf,af,od]=await Promise.all([findTeamHistory(f.teams.home.id),findTeamHistory(f.teams.away.id),getOdds(f.fixture.id)]);
+    const [hf,af,od]=await Promise.all([findTeamHistory(f.teams.home.id,f.fixture.date),findTeamHistory(f.teams.away.id,f.fixture.date),getOdds(f.fixture.id)]);
     const form=arr=>arr.map(x=>({gf:Vnum(x.goals?.for)||0,ga:Vnum(x.goals?.against)||0,home:x.teams?.home?.id===f.teams.home.id}));
     const h={form:form(hf)},a={form:form(af)};const model=modelFor(h,a);const odds=parseOdds(od);
     const markets=model.markets.map(([market,p])=>{const o=odds[market]||null;const fair=fairOdds(p),e=ev(p,o);return {market,p,odds:o,fair,ev:e,threshold:fair?fair*1.05:null};}).sort((x,y)=>(y.ev??-999)-(x.ev??-999));
@@ -865,7 +873,7 @@ async function runValueScan(){
 }
 function renderValueProgress(done,total){const el=document.getElementById('valueProgress');if(el)el.textContent='Analysing '+done+' of '+total+' fixtures…'}
 function renderValue(){const root=document.getElementById('value');if(!root)return;root.innerHTML=`<div class="sectionHead"><div><h2>💰 Value Scanner</h2><div class="hint">Modelled probabilities first, bookmaker price second. It does not call a bet “value” unless the price beats the model's fair price.</div></div></div>
- <div class="card"><div class="valueControls"><div class="field"><label>API-Football connection</label><div class="hint">🔐 Secure server connection — API key is stored in Netlify, not in this app.</div></div><div class="marketRow"><div class="field"><label>Fixture date</label><input id="valueDate" type="date" value="${VALUE_STATE.date}"></div><div class="field"><label>Minimum EV to show</label><input id="valueMinEv" type="number" step="0.1" value="5"></div></div><button class="btn primary" id="runValue">${VALUE_STATE.running?'Scanning…':'🔎 Scan for value'}</button><div id="valueProgress" class="hint">${VALUE_STATE.running?'Starting scan…':VALUE_STATE.results.length?VALUE_STATE.results.length+' fixtures analysed.':'The model uses up to 20-match form where available and compares model probabilities with bookmaker prices. API access is secured server-side.'}</div></div></div>
+ <div class="card"><div class="valueControls"><div class="field"><label>API-Football connection</label><div class="hint">🔐 Secure server connection — API key is stored in Netlify, not in this app.</div></div><div class="marketRow"><div class="field"><label>Fixture date</label><input id="valueDate" type="date" value="${VALUE_STATE.date}"></div><div class="field"><label>Minimum EV to show</label><input id="valueMinEv" type="number" step="0.1" value="5"></div></div><button class="btn primary" id="runValue">${VALUE_STATE.running?'Scanning…':'🔎 Scan for value'}</button><div id="valueProgress" class="hint">${VALUE_STATE.running?'Starting scan…':VALUE_STATE.results.length?VALUE_STATE.results.length+' fixtures analysed.':'The model uses up to 20 completed current-season matches where available and compares model probabilities with bookmaker prices. API access is secured server-side.'}</div></div></div>
  <div class="valueWarn">⚠️ A positive EV result is a <b>modelled value candidate</b>, not proof of profit. The app must be backtested/calibrated before treating the model probability as trustworthy.</div>
  ${renderValueResults()}`;
  document.getElementById('runValue').onclick=runValueScan;

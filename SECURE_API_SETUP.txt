@@ -1,14 +1,19 @@
-FINAL SECURE API SETUP
+SECURE API SETUP
 
-1. Deploy this ZIP to your Netlify site.
-2. Netlify -> Site configuration -> Environment variables.
+This version keeps the API-Football key out of the browser.
+
+1. Deploy this project to Netlify.
+2. In Netlify: Site configuration -> Environment variables.
 3. Add:
-   NETLIFY_API_KEY = your API-Football key
-4. Redeploy.
+   Name: NETLIFY_API_KEY
+   Value: YOUR_API_FOOTBALL_KEY
+4. Redeploy the site.
 
-The app no longer asks you to enter an API key and does not store the key in localStorage.
-The browser calls the Netlify function; the function adds the secret server-side.
+The browser calls /.netlify/functions/football-api and the function adds the secret server-side.
 
-IMPORTANT: regenerate any API key that was exposed in chat, then use the new key here.
+IMPORTANT FREE-PLAN FIX:
+The Free API-Football plan rejects the `last` fixtures parameter. The Value Scanner therefore uses the supported `team + season` fixture list, filters completed matches before the selected fixture, sorts them newest-first, and uses up to 20 where available. This also caches each team's season history during a scan to reduce API requests.
 
-FIX INCLUDED: recent team history now uses the supported team+last fixture query and filters completed matches locally, preventing the per-fixture Data error caused by the previous query combination.
+The Free plan is limited to 100 requests/day, so scanning many fixtures can still use the daily quota.
+
+If the key previously posted in chat is still active, regenerate it and use the new key in Netlify.
